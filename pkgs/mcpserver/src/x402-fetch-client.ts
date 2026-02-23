@@ -11,6 +11,8 @@ export type WeatherData = {
 
 type ErrorResponse = {
   message?: string;
+  error?: string;
+  details?: string;
 };
 
 type X402FetchClientEnv = {
@@ -39,6 +41,12 @@ const parseErrorMessage = async (response: Response): Promise<string> => {
     const parsed = (await response.json()) as ErrorResponse;
     if (parsed?.message) {
       return parsed.message;
+    }
+    if (parsed?.details) {
+      return parsed.details;
+    }
+    if (parsed?.error) {
+      return parsed.error;
     }
   } catch {
     // ignore json parse failure

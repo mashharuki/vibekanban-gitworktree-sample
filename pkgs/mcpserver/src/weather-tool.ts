@@ -13,6 +13,7 @@ type GetWeatherToolDeps = {
   createClient: (env: X402FetchClientEnv) => WeatherFetchClient;
   getEnv: () => X402FetchClientEnv;
 };
+export type { GetWeatherToolDeps };
 
 type GetWeatherToolInput = z.infer<typeof getWeatherInputSchema>;
 
