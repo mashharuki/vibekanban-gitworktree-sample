@@ -2,7 +2,7 @@
 
 ## Organization Philosophy
 
-pnpm workspaceによるMonorepo構成。サービスごとにパッケージを分離し、共通コードはsharedパッケージで管理する。
+pnpm workspaceによるMonorepo構成。`pkgs/` ディレクトリ配下にサービスごとのパッケージを配置する。
 
 ## Directory Patterns
 
@@ -12,17 +12,17 @@ pnpm workspaceによるMonorepo構成。サービスごとにパッケージを�
 **Example**: `pnpm-workspace.yaml`, `package.json`, `.github/`
 
 ### x402バックエンドサーバー
-**Location**: `/packages/x402-backend/` (予定)
+**Location**: `/pkgs/x402server/`
 **Purpose**: 天気予報API + x402支払いゲートウェイ
-**Example**: `src/index.ts`, `wrangler.toml`, `vitest.config.ts`
+**Example**: `src/index.ts`, `wrangler.jsonc`, `tsconfig.json`
 
 ### MCPサーバー
-**Location**: `/packages/mcp-server/` (予定)
+**Location**: `/pkgs/mcpserver/`
 **Purpose**: GPT App連携用MCPサーバー
-**Example**: `src/index.ts`, `wrangler.toml`, `vitest.config.ts`
+**Example**: `src/index.ts`, `wrangler.jsonc`, `tsconfig.json`
 
 ### 共通パッケージ（検討中）
-**Location**: `/packages/shared/` (必要に応じて)
+**Location**: `/pkgs/shared/` (必要に応じて)
 **Purpose**: 共通の型定義、ユーティリティ、定数
 **Example**: `src/types.ts`, `src/utils.ts`
 
@@ -39,13 +39,20 @@ pnpm workspaceによるMonorepo構成。サービスごとにパッケージを�
 ```typescript
 // 1. External libraries
 import { Hono } from 'hono'
-import { paymentRequired } from 'x402-lib'
 
-// 2. Internal shared packages
-import { WeatherResponse } from '@repo/shared'
+// 2. Internal shared packages (将来)
+// import { WeatherResponse } from '@repo/shared'
 
 // 3. Local modules
 import { handler } from './handler'
+```
+
+## Workspace Shortcuts
+
+ルートの `package.json` にフィルタショートカットが定義されている:
+```bash
+pnpm x402server <command>  # → pnpm --filter x402server <command>
+pnpm mcpserver <command>   # → pnpm --filter mcpserver <command>
 ```
 
 ## Code Organization Principles
@@ -53,7 +60,8 @@ import { handler } from './handler'
 - 各Cloudflare Workerは独立してデプロイ可能
 - ビジネスロジックとルーティングを分離
 - テストファイルはソースファイルと同階層（`*.test.ts`）
-- 環境変数はwrangler.tomlまたは.dev.varsで管理（ハードコード禁止）
+- Wrangler設定は `wrangler.jsonc`（JSONC形式）を使用
+- 環境変数はwrangler.jsoncまたは.dev.varsで管理（ハードコード禁止）
 
 ---
 _Document patterns, not file trees. New files following patterns shouldn't require updates_
