@@ -1,7 +1,9 @@
 import { StreamableHTTPTransport } from "@hono/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { cors } from "hono/cors";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { createDefaultGetWeatherToolDeps, registerGetWeatherTool } from "./weather-tool";
+import type { X402FetchClientEnv } from "./x402-fetch-client";
 
 const app = new Hono();
 
@@ -11,6 +13,18 @@ const mcpServer = new McpServer({
 });
 
 let transport: StreamableHTTPTransport | null = null;
+let currentEnv: X402FetchClientEnv | null = null;
+
+registerGetWeatherTool(
+  mcpServer,
+  createDefaultGetWeatherToolDeps(
+    () =>
+      currentEnv ?? {
+        CLIENT_PRIVATE_KEY: "",
+        X402_SERVER_URL: "",
+      },
+  ),
+);
 
 const connectServerIfNeeded = async (): Promise<StreamableHTTPTransport> => {
   if (mcpServer.isConnected() && transport) {
@@ -43,6 +57,7 @@ app.get("/", (c) => {
 });
 
 app.all("/mcp", async (c) => {
+  currentEnv = c.env as X402FetchClientEnv;
   const currentTransport = await connectServerIfNeeded();
 
   try {
