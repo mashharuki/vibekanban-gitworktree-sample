@@ -11,9 +11,12 @@ VibeKanban と Git Worktree を組み合わせた、AI駆動の並列開発を�
 - Monorepo: pnpm workspace
 
 ## Repository State (as of 2026-02-23)
-- ルート設定ファイルとステアリング文書が中心の初期段階
-- `pnpm-workspace.yaml` は `pkgs/*` をワークスペースとして定義
-- `pkgs/` 配下の実装パッケージは未作成（空）
+- Hono hello-world スキャフォールドが両サーバーに存在
+- `pkgs/x402server/` - x402バックエンドサーバー (Hono + Wrangler)
+- `pkgs/mcpserver/` - MCPサーバー (Hono + Wrangler)
+- Biome でフォーマット、pnpm@10.20.0
+- Wrangler設定は `wrangler.jsonc` (JSONC形式)
+- Vitest はまだ未導入（devDependencies に含まれていない）
 - `.kiro/specs/` にアクティブ仕様は未作成
 
 ## Key Files
