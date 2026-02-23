@@ -1,5 +1,10 @@
 import type { ResolvedPaymentOptions } from "./config";
 
+/**
+ * ルーティング
+ * @param payment
+ * @returns
+ */
 export const createRoutes = (payment: ResolvedPaymentOptions) => {
   return {
     "GET /weather": {

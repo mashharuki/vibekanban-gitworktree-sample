@@ -1,25 +1,13 @@
 import { paymentMiddleware } from "@x402/hono";
 import { Hono } from "hono";
-import {
-  createResourceServer,
-  type PaymentOptions,
-  resolvePaymentOptions,
-} from "./config";
+import { createResourceServer, resolvePaymentOptions } from "./config";
 import { createRoutes } from "./route";
-import {
-  createMockWeatherService,
-  type WeatherService,
-} from "./weather/service";
-
-type ErrorResponse = {
-  statusCode: number;
-  message: string;
-};
-
-type CreateAppOptions = {
-  enablePayment?: boolean;
-  payment?: PaymentOptions;
-};
+import type {
+  CreateAppOptions,
+  ErrorResponse,
+  WeatherService,
+} from "./utils/types";
+import { createMockWeatherService } from "./weather/service";
 
 const toErrorResponse = (
   statusCode: number,
@@ -29,6 +17,12 @@ const toErrorResponse = (
   message,
 });
 
+/**
+ * Honoアプリケーションを作成するメソッド
+ * @param weatherService
+ * @param options
+ * @returns
+ */
 export const createApp = (
   weatherService: WeatherService = createMockWeatherService(),
   options: CreateAppOptions = {},

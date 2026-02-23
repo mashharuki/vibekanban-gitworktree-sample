@@ -1,26 +1,15 @@
-import {
-  type FacilitatorClient,
-  HTTPFacilitatorClient,
-  x402ResourceServer,
-} from "@x402/core/server";
+import { x402Client } from "@x402/axios";
+import { HTTPFacilitatorClient, x402ResourceServer } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { PaymentOptions, ResolvedPaymentOptions } from "./utils/types";
 
-export type PaymentOptions = {
-  payTo?: string;
-  facilitatorUrl?: string;
-  price?: string;
-  network?: string;
-  facilitatorClient?: FacilitatorClient;
-};
-
-export type ResolvedPaymentOptions = {
-  payTo: string;
-  facilitatorUrl: string;
-  price: string;
-  network: string;
-  facilitatorClient?: FacilitatorClient;
-};
-
+export const client = new x402Client();
+/**
+ * 必須の支払い設定を取得します
+ * @param value
+ * @param key
+ * @returns
+ */
 const requiredPaymentConfig = (value: string | undefined, key: string) => {
   if (value?.trim()) {
     return value;
@@ -29,6 +18,12 @@ const requiredPaymentConfig = (value: string | undefined, key: string) => {
   throw new Error(`Missing required payment configuration: ${key}`);
 };
 
+/**
+ * ファシリテーターURLを正規化します。
+ * 特に、旧URLである https://facilitator.x402.org を https://x402.org/facilitator に変換します。
+ * @param rawUrl
+ * @returns
+ */
 const normalizeFacilitatorUrl = (rawUrl: string): string => {
   const trimmed = rawUrl.trim();
 
@@ -45,6 +40,11 @@ const normalizeFacilitatorUrl = (rawUrl: string): string => {
   return trimmed;
 };
 
+/**
+ * 必須の支払い設定を取得します
+ * @param payment
+ * @returns
+ */
 export const resolvePaymentOptions = (
   payment: PaymentOptions = {},
 ): ResolvedPaymentOptions => {
@@ -71,6 +71,11 @@ export const resolvePaymentOptions = (
   };
 };
 
+/**
+ * リソースサーバーインスタンスを作成する
+ * @param paymentOptions
+ * @returns
+ */
 export const createResourceServer = (
   paymentOptions: ResolvedPaymentOptions,
 ) => {
@@ -81,7 +86,7 @@ export const createResourceServer = (
     });
 
   return new x402ResourceServer(facilitatorClient).register(
-    paymentOptions.network,
+    paymentOptions.network as `${string}:${string}`,
     new ExactEvmScheme(),
   );
 };

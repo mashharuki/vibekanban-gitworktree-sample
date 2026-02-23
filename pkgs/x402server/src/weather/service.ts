@@ -1,14 +1,6 @@
-export type WeatherData = {
-  city: string;
-  condition: string;
-  temperatureC: number;
-  humidity: number;
-};
+import { WeatherData, WeatherService } from "../utils/types";
 
-export interface WeatherService {
-  getWeatherByCity(city: string): Promise<WeatherData | null>;
-}
-
+// モックの天気予報データ
 const MOCK_WEATHER_DATA: ReadonlyArray<WeatherData> = [
   {
     city: "Tokyo",
@@ -32,6 +24,10 @@ const MOCK_WEATHER_DATA: ReadonlyArray<WeatherData> = [
 
 const normalizeCity = (city: string): string => city.trim().toLowerCase();
 
+/**
+ * モックの天気予報を提供するWeatherServiceの実装を作成するファクトリーメソッド
+ * @returns
+ */
 export const createMockWeatherService = (): WeatherService => {
   return {
     async getWeatherByCity(city: string): Promise<WeatherData | null> {
