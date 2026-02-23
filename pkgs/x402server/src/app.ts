@@ -2,10 +2,17 @@ import { paymentMiddleware } from "@x402/hono";
 import { Hono } from "hono";
 import { createRoutes } from "./route";
 import { createResourceServer, resolvePaymentOptions } from "./utils/config";
-import type { CreateAppOptions, ErrorResponse, WeatherService } from "./utils/types";
+import type {
+  CreateAppOptions,
+  ErrorResponse,
+  WeatherService,
+} from "./utils/types";
 import { createMockWeatherService } from "./weather/service";
 
-const toErrorResponse = (statusCode: number, message: string): ErrorResponse => ({
+const toErrorResponse = (
+  statusCode: number,
+  message: string,
+): ErrorResponse => ({
   statusCode,
   message,
 });
@@ -40,17 +47,21 @@ export const createApp = (
       }
 
       if (!resourceServerInitialization) {
-        resourceServerInitialization = resourceServer.initialize().catch((error) => {
-          resourceServerInitialization = null;
-          throw error;
-        });
+        resourceServerInitialization = resourceServer
+          .initialize()
+          .catch((error) => {
+            resourceServerInitialization = null;
+            throw error;
+          });
       }
 
       await resourceServerInitialization;
       return next();
     });
 
-    app.use(paymentMiddleware(routes, resourceServer, undefined, undefined, false));
+    app.use(
+      paymentMiddleware(routes, resourceServer, undefined, undefined, false),
+    );
   }
 
   app.get("/", (c) => {
@@ -71,7 +82,10 @@ export const createApp = (
     const city = c.req.query("city")?.trim();
 
     if (!city) {
-      return c.json(toErrorResponse(400, "city query parameter is required"), 400);
+      return c.json(
+        toErrorResponse(400, "city query parameter is required"),
+        400,
+      );
     }
 
     try {
