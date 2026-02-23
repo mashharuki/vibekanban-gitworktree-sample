@@ -1,10 +1,15 @@
 import { x402Version } from "@x402/core";
+import type { FacilitatorClient } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm";
 import { privateKeyToAccount } from "viem/accounts";
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 import { createApp as createMcpApp } from "../src/index";
 import { createX402FetchClient, type X402FetchClientEnv } from "../src/x402-fetch-client";
-import { createApp as createX402App } from "../../x402server/src/app";
+
+type CreateX402App = (typeof import("../../x402server/src/index"))["createApp"];
+type RequestableApp = {
+  request: (input: string, init?: RequestInit) => Promise<Response>;
+};
 
 const parseSseMessageData = (ssePayload: string): unknown => {
   const dataLine = ssePayload.split("\n").find((line) => line.startsWith("data: "));
@@ -44,7 +49,44 @@ const initializeMcpServer = async (app: ReturnType<typeof createMcpApp>, env: X4
   expect(initResponse.status).toBe(200);
 };
 
-const createAppConnectedWithX402Server = (x402App: ReturnType<typeof createX402App>) => {
+const originalFetch = globalThis.fetch;
+const mockedFacilitatorFetch: typeof fetch = async (input, init) => {
+  const url = typeof input === "string" ? input : input.toString();
+  if (url.includes("facilitator.x402.org")) {
+    return new Response(
+      JSON.stringify({
+        kinds: [{ x402Version, scheme: "exact", network: "eip155:84532" }],
+        extensions: [],
+        signers: {},
+      }),
+      {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      },
+    );
+  }
+
+  return originalFetch(input, init);
+};
+
+let createX402App: CreateX402App | null = null;
+
+const loadCreateX402App = async (): Promise<CreateX402App> => {
+  if (createX402App) {
+    return createX402App;
+  }
+
+  globalThis.fetch = mockedFacilitatorFetch;
+  const mod = await import("../../x402server/src/index");
+  createX402App = mod.createApp;
+  return createX402App;
+};
+
+afterAll(() => {
+  globalThis.fetch = originalFetch;
+});
+
+const createAppConnectedWithX402Server = (x402App: RequestableApp) => {
   return createMcpApp({
     getWeatherToolDepsFactory: (getEnv) => ({
       createClient: (env) =>
@@ -104,7 +146,7 @@ const callGetWeatherTool = async (
   };
 };
 
-const unpaidFacilitatorClient = {
+const unpaidFacilitatorClient: FacilitatorClient = {
   async getSupported() {
     return {
       kinds: [{ x402Version, scheme: "exact", network: "eip155:84532" }],
@@ -127,7 +169,8 @@ describe("e2e validation: mcpserver <-> x402server", () => {
   };
 
   it("responds healthy from both services", async () => {
-    const x402App = createX402App(undefined, { enablePayment: false });
+    const createX402 = await loadCreateX402App();
+    const x402App = createX402(undefined, { enablePayment: false });
     const mcpApp = createAppConnectedWithX402Server(x402App);
 
     const x402Health = await x402App.request("/");
@@ -140,7 +183,8 @@ describe("e2e validation: mcpserver <-> x402server", () => {
   });
 
   it("returns weather data through MCP get_weather tool", async () => {
-    const x402App = createX402App(undefined, { enablePayment: false });
+    const createX402 = await loadCreateX402App();
+    const x402App = createX402(undefined, { enablePayment: false });
     const mcpApp = createAppConnectedWithX402Server(x402App);
     await initializeMcpServer(mcpApp, env);
 
@@ -154,7 +198,8 @@ describe("e2e validation: mcpserver <-> x402server", () => {
   });
 
   it("propagates city not found errors to MCP response", async () => {
-    const x402App = createX402App(undefined, { enablePayment: false });
+    const createX402 = await loadCreateX402App();
+    const x402App = createX402(undefined, { enablePayment: false });
     const mcpApp = createAppConnectedWithX402Server(x402App);
     await initializeMcpServer(mcpApp, env);
 
@@ -167,7 +212,8 @@ describe("e2e validation: mcpserver <-> x402server", () => {
   });
 
   it("propagates validation errors when city is missing", async () => {
-    const x402App = createX402App(undefined, { enablePayment: false });
+    const createX402 = await loadCreateX402App();
+    const x402App = createX402(undefined, { enablePayment: false });
     const mcpApp = createAppConnectedWithX402Server(x402App);
     await initializeMcpServer(mcpApp, env);
 
@@ -177,8 +223,9 @@ describe("e2e validation: mcpserver <-> x402server", () => {
   });
 
   it("propagates x402 payment-required errors from protected weather endpoint", async () => {
-    const x402App = createX402App(undefined, {
-      payment: { facilitatorClient: unpaidFacilitatorClient as never },
+    const createX402 = await loadCreateX402App();
+    const x402App = createX402(undefined, {
+      payment: { facilitatorClient: unpaidFacilitatorClient },
     });
     const mcpApp = createAppConnectedWithX402Server(x402App);
     await initializeMcpServer(mcpApp, env);
