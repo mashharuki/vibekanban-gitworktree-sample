@@ -1,0 +1,8 @@
+# x402server local development variables
+# Copy this file to .dev.vars and set real values
+
+# Recipient wallet for x402 payments
+SERVER_WALLET_ADDRESS=0x0000000000000000000000000000000000000000
+
+# x402 facilitator endpoint URL
+FACILITATOR_URL=https://facilitator.example.com
