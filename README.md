@@ -30,6 +30,21 @@ x402バックエンドサーバーとMCPサーバーを使ってGPT App内のチ
 npx vibe-kanban
 ```
 
+## Git Worktreeの始め方
+
+```bash
+
+```
+
+## cc-sdd + VibeKanban + GitWorkTreeによる開発のワークフロー
+
+- 0. プロダクトのビジョン、コンセプトを策定する
+- 1. cc-sddで要件定義と設計書、タスクリストを作成する
+- 2. VibeKanbanにタスクを登録
+- 3. git worktreeで作業ディレクトリを準備
+- 4. タスクの並列実行
+- 5. 各成果物をセルフレビュー・PR作成
+
 ## 参考文献
 
 - [【2026年最新】Claude Code作者が実践する「超並列駆動」開発術がエンジニアの常識を破壊していた](https://qiita.com/ot12/items/66e7c07c459e3bb7082d)
