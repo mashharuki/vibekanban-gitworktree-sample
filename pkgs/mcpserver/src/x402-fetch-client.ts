@@ -26,9 +26,7 @@ type X402FetchClientDeps = {
   fetchImpl: typeof fetch;
   wrapFetchWithPaymentFromConfig: typeof wrapFetchWithPaymentFromConfig;
   privateKeyToAccount: typeof privateKeyToAccount;
-  createSchemeClient: (
-    account: ReturnType<typeof privateKeyToAccount>,
-  ) => unknown;
+  createSchemeClient: (account: ReturnType<typeof privateKeyToAccount>) => unknown;
 };
 
 const defaultDeps: X402FetchClientDeps = {
@@ -95,7 +93,9 @@ export class X402FetchClient {
 
     if (!response.ok) {
       const detail = await parseErrorMessage(response);
-      throw new Error(`weather request failed (${response.status}): ${detail}`);
+      const location = ` at ${url.toString()}`;
+      const hint = response.status === 404 ? " (check X402_SERVER_URL points to x402server)" : "";
+      throw new Error(`weather request failed (${response.status})${location}: ${detail}${hint}`);
     }
 
     return (await response.json()) as WeatherData;
