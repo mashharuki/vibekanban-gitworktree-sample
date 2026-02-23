@@ -27,27 +27,28 @@ pnpm monorepo構成で、2つのCloudflare Workersサービスを管理する。
 - 明示的な型定義を推奨
 
 ### Code Quality
-- ESLint + Prettier（プロジェクトセットアップ時に設定）
+- Biome（フォーマッター）: `pnpm format` でプロジェクト全体をフォーマット
 - Conventional Commits形式
 
 ### Testing
-- Vitest（両サーバー共通）
+- Vitest（両サーバーに導入予定）
 - TDDアプローチを推奨（AGENTS.mdに準拠）
 
 ## Development Environment
 
 ### Required Tools
 - Node.js 20+
-- pnpm 9+
-- Wrangler CLI（Cloudflare Workers開発）
+- pnpm 10+（packageManager: pnpm@10.20.0）
+- Wrangler CLI（Cloudflare Workers開発、各パッケージのdevDependenciesに含む）
 
 ### Common Commands
 ```bash
 # 依存関係インストール: pnpm install
-# 開発サーバー起動: pnpm dev
-# テスト実行: pnpm test
-# ビルド: pnpm build
-# デプロイ: pnpm deploy
+# フォーマット: pnpm format
+# x402server開発: pnpm x402server dev
+# mcpserver開発: pnpm mcpserver dev
+# x402serverデプロイ: pnpm x402server deploy
+# mcpserverデプロイ: pnpm mcpserver deploy
 ```
 
 ## Key Technical Decisions
