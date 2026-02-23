@@ -28,8 +28,29 @@ export const createApp = (
   if (enablePayment) {
     const paymentOptions = resolvePaymentOptions(options.payment);
     const resourceServer = createResourceServer(paymentOptions);
+    const routes = createRoutes(paymentOptions);
+    const protectedRouteKeys = new Set(Object.keys(routes));
+    let resourceServerInitialization: Promise<void> | null = null;
 
-    app.use(paymentMiddleware(createRoutes(paymentOptions), resourceServer, undefined, undefined, true));
+    app.use(async (c, next) => {
+      const routeKey = `${c.req.method.toUpperCase()} ${c.req.path}`;
+
+      if (!protectedRouteKeys.has(routeKey)) {
+        return next();
+      }
+
+      if (!resourceServerInitialization) {
+        resourceServerInitialization = resourceServer.initialize().catch((error) => {
+          resourceServerInitialization = null;
+          throw error;
+        });
+      }
+
+      await resourceServerInitialization;
+      return next();
+    });
+
+    app.use(paymentMiddleware(routes, resourceServer, undefined, undefined, false));
   }
 
   app.get("/", (c) => {
