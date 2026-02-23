@@ -77,7 +77,23 @@ describe("createX402FetchClient", () => {
     const client = createX402FetchClient(dummyEnv, deps);
 
     await expect(client.fetchWeather("Tokyo")).rejects.toThrow(
-      "x402 payment failed: payment rejected",
+      "x402 payment failed (402): payment rejected",
+    );
+  });
+
+  it("throws an HTTP error with status when response is not ok", async () => {
+    const { paymentFetch, deps } = createDeps();
+    paymentFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ message: "service unavailable" }), {
+        status: 503,
+        statusText: "Service Unavailable",
+      }),
+    );
+
+    const client = createX402FetchClient(dummyEnv, deps);
+
+    await expect(client.fetchWeather("Tokyo")).rejects.toThrow(
+      "weather request failed (503): service unavailable",
     );
   });
 
@@ -103,5 +119,16 @@ describe("createX402FetchClient", () => {
         deps,
       ),
     ).toThrow("X402_SERVER_URL is required");
+  });
+
+  it("throws a clear error when private key is invalid", () => {
+    const { deps } = createDeps();
+    deps.privateKeyToAccount = vi.fn(() => {
+      throw new Error("invalid hex");
+    }) as typeof deps.privateKeyToAccount;
+
+    expect(() => createX402FetchClient(dummyEnv, deps)).toThrow(
+      "CLIENT_PRIVATE_KEY is invalid: invalid hex",
+    );
   });
 });

@@ -80,12 +80,12 @@ export class X402FetchClient {
 
     if (response.status === 402) {
       const detail = await parseErrorMessage(response);
-      throw new Error(`x402 payment failed: ${detail}`);
+      throw new Error(`x402 payment failed (402): ${detail}`);
     }
 
     if (!response.ok) {
       const detail = await parseErrorMessage(response);
-      throw new Error(`weather request failed: ${detail}`);
+      throw new Error(`weather request failed (${response.status}): ${detail}`);
     }
 
     return (await response.json()) as WeatherData;
@@ -98,7 +98,13 @@ export const createX402FetchClient = (
 ): X402FetchClient => {
   validateEnv(env);
 
-  const account = deps.privateKeyToAccount(env.CLIENT_PRIVATE_KEY as `0x${string}`);
+  let account: ReturnType<typeof privateKeyToAccount>;
+  try {
+    account = deps.privateKeyToAccount(env.CLIENT_PRIVATE_KEY as `0x${string}`);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown error";
+    throw new Error(`CLIENT_PRIVATE_KEY is invalid: ${message}`);
+  }
 
   const paymentFetch = deps.wrapFetchWithPaymentFromConfig(deps.fetchImpl, {
     schemes: [
