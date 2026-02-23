@@ -4,15 +4,20 @@ import { ExactEvmScheme } from "@x402/evm";
 import { privateKeyToAccount } from "viem/accounts";
 import { afterAll, describe, expect, it } from "vitest";
 import { createApp as createMcpApp } from "../src/index";
-import { createX402FetchClient, type X402FetchClientEnv } from "../src/x402-fetch-client";
+import {
+  createX402FetchClient,
+  type X402FetchClientEnv,
+} from "../src/x402-fetch-client";
 
-type CreateX402App = (typeof import("../../x402server/src/index"))["createApp"];
+type CreateX402App = typeof import("../../x402server/src/index")["createApp"];
 type RequestableApp = {
   request: (input: string, init?: RequestInit) => Promise<Response>;
 };
 
 const parseSseMessageData = (ssePayload: string): unknown => {
-  const dataLine = ssePayload.split("\n").find((line) => line.startsWith("data: "));
+  const dataLine = ssePayload
+    .split("\n")
+    .find((line) => line.startsWith("data: "));
   if (!dataLine) {
     throw new Error("SSE payload does not contain a data line");
   }
@@ -20,7 +25,10 @@ const parseSseMessageData = (ssePayload: string): unknown => {
   return JSON.parse(dataLine.slice("data: ".length));
 };
 
-const initializeMcpServer = async (app: ReturnType<typeof createMcpApp>, env: X402FetchClientEnv) => {
+const initializeMcpServer = async (
+  app: ReturnType<typeof createMcpApp>,
+  env: X402FetchClientEnv,
+) => {
   const initResponse = await app.request(
     "/mcp",
     {
@@ -66,7 +74,10 @@ const testPaymentEnv = {
 
 const mockedFacilitatorFetch: typeof fetch = async (input, init) => {
   const url = typeof input === "string" ? input : input.toString();
-  if (url.includes("facilitator.x402.org") || url.includes("x402.org/facilitator")) {
+  if (
+    url.includes("facilitator.x402.org") ||
+    url.includes("x402.org/facilitator")
+  ) {
     return new Response(
       JSON.stringify({
         kinds: [{ x402Version, scheme: "exact", network: "eip155:84532" }],
@@ -114,7 +125,9 @@ const createAppConnectedWithX402Server = (x402App: RequestableApp) => {
       createClient: (env) =>
         createX402FetchClient(env, {
           fetchImpl: (input, init) => {
-            const url = new URL(typeof input === "string" ? input : input.toString());
+            const url = new URL(
+              typeof input === "string" ? input : input.toString(),
+            );
             const pathWithQuery = `${url.pathname}${url.search}`;
 
             return x402App.request(pathWithQuery, {
@@ -132,7 +145,11 @@ const createAppConnectedWithX402Server = (x402App: RequestableApp) => {
   });
 };
 
-const callGetWeatherTool = async (app: ReturnType<typeof createMcpApp>, city: string, env: X402FetchClientEnv) => {
+const callGetWeatherTool = async (
+  app: ReturnType<typeof createMcpApp>,
+  city: string,
+  env: X402FetchClientEnv,
+) => {
   const response = await app.request(
     "/mcp",
     {
@@ -182,7 +199,8 @@ const unpaidFacilitatorClient: FacilitatorClient = {
 
 describe("e2e validation: mcpserver <-> x402server", () => {
   const env: X402FetchClientEnv = {
-    CLIENT_PRIVATE_KEY: "0x1111111111111111111111111111111111111111111111111111111111111111",
+    CLIENT_PRIVATE_KEY:
+      "0x1111111111111111111111111111111111111111111111111111111111111111",
     X402_SERVER_URL: "http://x402.local",
   };
 
@@ -197,7 +215,10 @@ describe("e2e validation: mcpserver <-> x402server", () => {
     expect(x402Health.status).toBe(200);
     await expect(x402Health.json()).resolves.toEqual({ status: "ok" });
     expect(mcpHealth.status).toBe(200);
-    await expect(mcpHealth.json()).resolves.toEqual({ status: "ok", service: "mcpserver" });
+    await expect(mcpHealth.json()).resolves.toEqual({
+      status: "ok",
+      service: "mcpserver",
+    });
   });
 
   it("returns weather data through MCP get_weather tool", async () => {
@@ -236,7 +257,8 @@ describe("e2e validation: mcpserver <-> x402server", () => {
     await initializeMcpServer(mcpApp, env);
 
     const body = await callGetWeatherTool(mcpApp, "", env);
-    const errorText = body.error?.message ?? body.result?.content?.[0]?.text ?? "";
+    const errorText =
+      body.error?.message ?? body.result?.content?.[0]?.text ?? "";
     expect(errorText).toContain("city is required");
   });
 

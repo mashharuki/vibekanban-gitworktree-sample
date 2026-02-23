@@ -1,6 +1,7 @@
 import { createApp } from "./app";
 
+export { createApp };
+
 const app = createApp();
 
-export { createApp };
 export default app;

@@ -16,7 +16,9 @@ const initializeRequestBody = {
 };
 
 const parseSseMessageData = (ssePayload: string): unknown => {
-  const dataLine = ssePayload.split("\n").find((line) => line.startsWith("data: "));
+  const dataLine = ssePayload
+    .split("\n")
+    .find((line) => line.startsWith("data: "));
 
   if (!dataLine) {
     throw new Error("SSE payload does not contain a data line");
@@ -73,7 +75,9 @@ describe("mcpserver core", () => {
       }),
     });
 
-    const sessionId = initialResponse.headers.get("mcp-session-id") ?? initialResponse.headers.get("Mcp-Session-Id");
+    const sessionId =
+      initialResponse.headers.get("mcp-session-id") ??
+      initialResponse.headers.get("Mcp-Session-Id");
 
     const deleteResponse = await app.request("/mcp", {
       method: "DELETE",
@@ -99,10 +103,14 @@ describe("mcpserver core", () => {
       }),
     });
 
-    const reconnectBody = parseSseMessageData(await reconnectResponse.text()) as { id: string };
+    const reconnectBody = parseSseMessageData(
+      await reconnectResponse.text(),
+    ) as { id: string };
 
     expect(reconnectResponse.status).toBe(200);
-    expect(reconnectResponse.headers.get("content-type")).toContain("text/event-stream");
+    expect(reconnectResponse.headers.get("content-type")).toContain(
+      "text/event-stream",
+    );
     expect(reconnectBody.id).toBe("initialize-after-delete");
   });
 });

@@ -26,7 +26,9 @@ type X402FetchClientDeps = {
   fetchImpl: typeof fetch;
   wrapFetchWithPaymentFromConfig: typeof wrapFetchWithPaymentFromConfig;
   privateKeyToAccount: typeof privateKeyToAccount;
-  createSchemeClient: (account: ReturnType<typeof privateKeyToAccount>) => unknown;
+  createSchemeClient: (
+    account: ReturnType<typeof privateKeyToAccount>,
+  ) => unknown;
 };
 
 const defaultDeps: X402FetchClientDeps = {

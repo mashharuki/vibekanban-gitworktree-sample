@@ -36,7 +36,10 @@ const fakeFacilitatorClient = {
 describe("x402server API", () => {
   it("returns service status on GET /", async () => {
     const app = createApp(undefined, {
-      payment: { ...testPaymentOptions, facilitatorClient: fakeFacilitatorClient as any },
+      payment: {
+        ...testPaymentOptions,
+        facilitatorClient: fakeFacilitatorClient as any,
+      },
     });
 
     const res = await app.request("/");
@@ -47,7 +50,10 @@ describe("x402server API", () => {
 
   it("returns 402 for unpaid request on /weather", async () => {
     const app = createApp(undefined, {
-      payment: { ...testPaymentOptions, facilitatorClient: fakeFacilitatorClient as any },
+      payment: {
+        ...testPaymentOptions,
+        facilitatorClient: fakeFacilitatorClient as any,
+      },
     });
 
     const res = await app.request("/weather?city=Tokyo");
@@ -55,9 +61,27 @@ describe("x402server API", () => {
     expect(res.status).toBe(402);
   });
 
+  it("accepts legacy facilitator host by normalizing it", async () => {
+    const app = createApp(undefined, {
+      payment: {
+        ...testPaymentOptions,
+        facilitatorUrl: "https://facilitator.x402.org",
+        facilitatorClient: fakeFacilitatorClient as any,
+      },
+    });
+
+    const res = await app.request("/");
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ status: "ok" });
+  });
+
   it("keeps health check endpoint unprotected", async () => {
     const app = createApp(undefined, {
-      payment: { ...testPaymentOptions, facilitatorClient: fakeFacilitatorClient as any },
+      payment: {
+        ...testPaymentOptions,
+        facilitatorClient: fakeFacilitatorClient as any,
+      },
     });
 
     const res = await app.request("/");
