@@ -1,77 +1,50 @@
 import { paymentMiddleware } from "@x402/hono";
 import { Hono } from "hono";
-import { createResourceServer, resolvePaymentOptions } from "./config";
 import { createRoutes } from "./route";
-import type {
-  CreateAppOptions,
-  ErrorResponse,
-  WeatherService,
-} from "./utils/types";
+import { createResourceServer, resolvePaymentOptions } from "./utils/config";
+import type { ErrorResponse } from "./utils/types";
 import { createMockWeatherService } from "./weather/service";
 
-const toErrorResponse = (
-  statusCode: number,
-  message: string,
-): ErrorResponse => ({
-  statusCode,
-  message,
+const toErrorResponse = (statusCode: number, message: string): ErrorResponse => ({
+	statusCode,
+	message,
 });
 
-/**
- * Honoアプリケーションを作成するメソッド
- * @param weatherService
- * @param options
- * @returns
- */
-export const createApp = (
-  weatherService: WeatherService = createMockWeatherService(),
-  options: CreateAppOptions = {},
-): Hono => {
-  const app = new Hono();
+const weatherService = createMockWeatherService();
 
-  const enablePayment = options.enablePayment ?? true;
+export const app = new Hono();
 
-  if (enablePayment) {
-    const paymentOptions = resolvePaymentOptions(options.payment);
-    const resourceServer = createResourceServer(paymentOptions);
+const paymentOptions = resolvePaymentOptions();
+const resourceServer = createResourceServer(paymentOptions);
 
-    app.use(
-      paymentMiddleware(
-        createRoutes(paymentOptions),
-        resourceServer,
-        undefined,
-        undefined,
-        true,
-      ),
-    );
-  }
+app.use(paymentMiddleware(createRoutes(paymentOptions), resourceServer, undefined, undefined, true));
 
-  app.get("/", (c) => {
-    return c.json({ status: "ok" }, 200);
-  });
+app.get("/", (c) => {
+	return c.json({ status: "ok" }, 200);
+});
 
-  app.get("/weather", async (c) => {
-    const city = c.req.query("city")?.trim();
+app.get("/health", (c) => {
+	return c.json({ status: "ok" }, 200);
+});
 
-    if (!city) {
-      return c.json(
-        toErrorResponse(400, "city query parameter is required"),
-        400,
-      );
-    }
+app.get("/weather", async (c) => {
+	const city = c.req.query("city")?.trim();
 
-    try {
-      const weather = await weatherService.getWeatherByCity(city);
+	if (!city) {
+		return c.json(toErrorResponse(400, "city query parameter is required"), 400);
+	}
 
-      if (!weather) {
-        return c.json(toErrorResponse(404, "city not found"), 404);
-      }
+	try {
+		const weather = await weatherService.getWeatherByCity(city);
 
-      return c.json(weather, 200);
-    } catch {
-      return c.json(toErrorResponse(503, "weather service unavailable"), 503);
-    }
-  });
+		if (!weather) {
+			return c.json(toErrorResponse(404, "city not found"), 404);
+		}
 
-  return app;
-};
+		return c.json(weather, 200);
+	} catch {
+		return c.json(toErrorResponse(503, "weather service unavailable"), 503);
+	}
+});
+
+export default app;

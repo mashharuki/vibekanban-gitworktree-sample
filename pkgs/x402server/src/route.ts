@@ -1,4 +1,4 @@
-import type { ResolvedPaymentOptions } from "./config";
+import type { ResolvedPaymentOptions } from "./utils/types";
 
 /**
  * ルーティング
@@ -11,7 +11,7 @@ export const createRoutes = (payment: ResolvedPaymentOptions) => {
       accepts: {
         scheme: "exact",
         price: payment.price,
-        network: payment.network,
+        network: payment.network as `${string}:${string}`,
         payTo: payment.payTo,
       },
       description: "Access weather data",

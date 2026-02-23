@@ -1,4 +1,4 @@
-import { FacilitatorClient } from "@x402/core/server";
+import type { FacilitatorClient } from "@x402/core/server";
 
 export type WeatherData = {
   city: string;

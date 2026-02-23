@@ -1,10 +1,9 @@
-import { createApp } from "./app";
+import app from "./app";
+import { createApp } from "./app-factory";
 
-export { client, createResourceServer, resolvePaymentOptions } from "./config";
 export { createRoutes } from "./route";
+export { client, createResourceServer, resolvePaymentOptions } from "./utils/config";
 
 export { createApp };
-
-const app = createApp();
 
 export default app;
