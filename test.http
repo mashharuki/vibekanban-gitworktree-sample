@@ -1,0 +1,131 @@
+### ------------------------------------------------------------
+### End-to-end manual checks for x402server + mcpserver
+### ------------------------------------------------------------
+### Recommended startup (separate terminals):
+### 1) cd pkgs/x402server && pnpm dev --port 8787
+### 2) cd pkgs/mcpserver  && pnpm dev --port 8788
+###
+### mcpserver requires env vars (pkgs/mcpserver/.dev.vars):
+### - CLIENT_PRIVATE_KEY=0x...
+### - X402_SERVER_URL=http://127.0.0.1:8787
+### ------------------------------------------------------------
+
+@x402_base = http://127.0.0.1:8787
+@mcp_base = http://127.0.0.1:8788
+@json = application/json
+@mcp_accept = application/json, text/event-stream
+
+### 1) x402server health check
+GET {{x402_base}}/
+Accept: {{json}}
+
+### 2) x402 payment challenge (no payment header -> expect 402)
+GET {{x402_base}}/weather?city=Tokyo
+Accept: {{json}}
+
+### 3) x402 payment challenge with missing city (payment middleware still applies)
+GET {{x402_base}}/weather
+Accept: {{json}}
+
+### 4) Optional: invalid payment header (expect 402 with payment-related error)
+GET {{x402_base}}/weather?city=Tokyo
+Accept: {{json}}
+PAYMENT-SIGNATURE: invalid-signature
+
+### 5) mcpserver health check
+GET {{mcp_base}}/
+Accept: {{json}}
+
+### 6) MCP initialize (expect SSE response)
+# NOTE: Copy `mcp-session-id` from response headers into @mcp_session_id below.
+POST {{mcp_base}}/mcp
+Content-Type: {{json}}
+Accept: {{mcp_accept}}
+
+{
+  "jsonrpc": "2.0",
+  "id": "init-1",
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2025-06-18",
+    "capabilities": {},
+    "clientInfo": {
+      "name": "test-http-client",
+      "version": "1.0.0"
+    }
+  }
+}
+
+@mcp_session_id = paste-session-id-here
+
+### 7) MCP notifications/initialized
+POST {{mcp_base}}/mcp
+Content-Type: {{json}}
+Accept: {{mcp_accept}}
+mcp-session-id: {{mcp_session_id}}
+
+{
+  "jsonrpc": "2.0",
+  "method": "notifications/initialized",
+  "params": {}
+}
+
+### 8) MCP tools/list (should include get_weather)
+POST {{mcp_base}}/mcp
+Content-Type: {{json}}
+Accept: {{mcp_accept}}
+mcp-session-id: {{mcp_session_id}}
+
+{
+  "jsonrpc": "2.0",
+  "id": "tools-list-1",
+  "method": "tools/list",
+  "params": {}
+}
+
+### 9) MCP tools/call get_weather (happy path)
+POST {{mcp_base}}/mcp
+Content-Type: {{json}}
+Accept: {{mcp_accept}}
+mcp-session-id: {{mcp_session_id}}
+
+{
+  "jsonrpc": "2.0",
+  "id": "tool-call-1",
+  "method": "tools/call",
+  "params": {
+    "name": "get_weather",
+    "arguments": {
+      "city": "Tokyo"
+    }
+  }
+}
+
+### 10) MCP tools/call get_weather (unknown city -> tool error content)
+POST {{mcp_base}}/mcp
+Content-Type: {{json}}
+Accept: {{mcp_accept}}
+mcp-session-id: {{mcp_session_id}}
+
+{
+  "jsonrpc": "2.0",
+  "id": "tool-call-2",
+  "method": "tools/call",
+  "params": {
+    "name": "get_weather",
+    "arguments": {
+      "city": "Atlantis"
+    }
+  }
+}
+
+### 11) MCP session close
+DELETE {{mcp_base}}/mcp
+Accept: {{mcp_accept}}
+mcp-session-id: {{mcp_session_id}}
+
+### 12) CORS preflight check for /mcp
+OPTIONS {{mcp_base}}/mcp
+Origin: https://chatgpt.com
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: content-type,mcp-session-id

@@ -53,6 +53,14 @@ git worktree remove --force ../project-task-a
 
 ### x402バックエンドサーバー
 
+- セットアップ
+
+  環境変数用のファイルを作成
+
+  ```bash
+  cp pkgs/x402server/.dev.vars.example pkgs/x402server/.dev.vars
+  ```
+
 - ローカルでの検証
 
   ```bash
@@ -72,6 +80,16 @@ git worktree remove --force ../project-task-a
   ```
 
 ### MCPサーバー
+
+- セットアップ
+
+  環境変数用のファイルを作成
+
+  ```bash
+  cp pkgs/mcpserver/.dev.vars.example pkgs/mcpserver/.dev.vars
+  ```
+
+  `X402_SERVER_URL`には上記でCloudFlare Workersにデプロイしたx402バックエンドサーバーのAPIエンドポイントURLを指定する
 
 - ローカルでの検証
 
