@@ -2,17 +2,10 @@ import { paymentMiddleware } from "@x402/hono";
 import { Hono } from "hono";
 import { createRoutes } from "./route";
 import { createResourceServer, resolvePaymentOptions } from "./utils/config";
-import type {
-  CreateAppOptions,
-  ErrorResponse,
-  WeatherService,
-} from "./utils/types";
+import type { CreateAppOptions, ErrorResponse, WeatherService } from "./utils/types";
 import { createMockWeatherService } from "./weather/service";
 
-const toErrorResponse = (
-  statusCode: number,
-  message: string,
-): ErrorResponse => ({
+const toErrorResponse = (statusCode: number, message: string): ErrorResponse => ({
   statusCode,
   message,
 });
@@ -27,6 +20,7 @@ export const createApp = (
   weatherService: WeatherService = createMockWeatherService(),
   options: CreateAppOptions = {},
 ): Hono => {
+  // アプリケーションのインスタンスを作成
   const app = new Hono();
 
   const enablePayment = options.enablePayment ?? true;
@@ -35,33 +29,28 @@ export const createApp = (
     const paymentOptions = resolvePaymentOptions(options.payment);
     const resourceServer = createResourceServer(paymentOptions);
 
-    app.use(
-      paymentMiddleware(
-        createRoutes(paymentOptions),
-        resourceServer,
-        undefined,
-        undefined,
-        true,
-      ),
-    );
+    app.use(paymentMiddleware(createRoutes(paymentOptions), resourceServer, undefined, undefined, true));
   }
 
   app.get("/", (c) => {
     return c.json({ status: "ok" }, 200);
   });
 
+  /**
+   * ヘルスチェック用のルート
+   */
   app.get("/health", (c) => {
     return c.json({ status: "ok" }, 200);
   });
 
+  /**
+   * 天気情報を取得するルート
+   */
   app.get("/weather", async (c) => {
     const city = c.req.query("city")?.trim();
 
     if (!city) {
-      return c.json(
-        toErrorResponse(400, "city query parameter is required"),
-        400,
-      );
+      return c.json(toErrorResponse(400, "city query parameter is required"), 400);
     }
 
     try {
@@ -79,7 +68,3 @@ export const createApp = (
 
   return app;
 };
-
-export const app = createApp();
-
-export default app;

@@ -1,4 +1,6 @@
-import app, { createApp } from "./app";
+import { createApp } from "./app";
+
+const app = createApp();
 
 export { createApp };
 
