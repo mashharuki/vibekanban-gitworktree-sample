@@ -1,10 +1,23 @@
 # Task Completion Checklist
 
-When a task is completed, ensure the following:
+1. 要件との整合
+- 要求範囲を満たしている
+- 仕様（`.kiro/specs/<feature>/`）がある場合は内容と実装が一致
 
-1. **Tests pass**: `pnpm test` - all tests green
-2. **Type check**: No TypeScript errors
-3. **Lint/Format**: Code follows project conventions
-4. **No secrets**: No API keys or credentials hardcoded
-5. **Documentation**: Update README if public API changed
-6. **Steering sync**: If new architectural patterns introduced, consider updating `.kiro/steering/`
+2. 品質ゲート
+- テスト追加/更新が完了し、対象テストが成功
+- 型チェック・Lint・Format を通過
+- エラーハンドリングが握りつぶしになっていない
+
+3. セキュリティ/運用
+- 秘密情報のハードコードがない
+- 外部 I/O の失敗系を考慮（タイムアウト、リトライ方針）
+
+4. 変更管理
+- 不要コード/不要依存を増やしていない
+- 必要なドキュメント（README/仕様/設計メモ）を更新
+- 変更理由とトレードオフを説明可能な状態
+
+5. 最終確認
+- `git status` で意図しない変更がない
+- コミットする場合は Conventional Commits 形式を満たす

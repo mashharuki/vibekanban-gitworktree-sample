@@ -1,0 +1,15 @@
+{
+  "name": "vibekanban-gitworktree-sample",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "format": "biome format --write .",
+    "x402server": "pnpm --filter x402server",
+    "mcpserver": "pnpm --filter mcpserver"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.20.0"
+}

@@ -1,20 +1,25 @@
 # Project Overview
 
 ## Purpose
-GPT App内のチャットインターフェースから天気予報情報を取得し、x402プロトコルによるステーブルコイン自動決済を行うサンプルアプリ。
+VibeKanban と Git Worktree を組み合わせた、AI駆動の並列開発を試すためのサンプルプロジェクト。題材として、GPT App から天気予報 API を呼び出し、x402 プロトコル経由でステーブルコイン決済を行う構成を想定している。
 
-## Tech Stack
-- **Language**: TypeScript (strict mode)
-- **Framework**: Hono (both servers)
-- **Runtime**: Cloudflare Workers
-- **Testing**: Vitest
-- **Package Manager**: pnpm (monorepo)
-- **Key Libraries**: x402ライブラリ, GPT App SDK
+## Tech Stack (Planned)
+- Language: TypeScript (strict)
+- Framework: Hono
+- Runtime: Cloudflare Workers
+- Testing: Vitest
+- Monorepo: pnpm workspace
 
-## Architecture
-pnpm monorepo with two Cloudflare Workers services:
-1. x402 Backend Server - Weather API + payment gateway
-2. MCP Server - GPT App integration via Model Context Protocol
+## Repository State (as of 2026-02-23)
+- ルート設定ファイルとステアリング文書が中心の初期段階
+- `pnpm-workspace.yaml` は `pkgs/*` をワークスペースとして定義
+- `pkgs/` 配下の実装パッケージは未作成（空）
+- `.kiro/specs/` にアクティブ仕様は未作成
 
-## Current State
-Early stage - README and project configuration only, no source code yet.
+## Key Files
+- `README.md`
+- `package.json`
+- `pnpm-workspace.yaml`
+- `.kiro/steering/product.md`
+- `.kiro/steering/tech.md`
+- `.kiro/steering/structure.md`
