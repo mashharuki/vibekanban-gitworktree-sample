@@ -1,0 +1,5 @@
+# x402クライアントウォレットの秘密鍵（Base Sepoliaテストネット用）
+CLIENT_PRIVATE_KEY=0x_your_private_key_here
+
+# x402serverのURL
+X402_SERVER_URL=http://localhost:8787
