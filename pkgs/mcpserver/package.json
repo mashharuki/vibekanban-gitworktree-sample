@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
+    "delete": "wrangler delete",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
