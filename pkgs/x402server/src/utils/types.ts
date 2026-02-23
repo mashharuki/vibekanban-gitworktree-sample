@@ -34,5 +34,5 @@ export type ResolvedPaymentOptions = {
   facilitatorUrl: string;
   price: string;
   network: string;
-  facilitatorClient?: FacilitatorClient;
+  facilitatorClient: FacilitatorClient;
 };
