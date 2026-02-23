@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "format": "biome format --write .",
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "ci": "pnpm run build && pnpm run test",
     "x402server": "pnpm --filter x402server",
     "mcpserver": "pnpm --filter mcpserver"
   },
@@ -13,6 +16,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.20.0",
   "devDependencies": {
-    "@biomejs/biome": "2.4.4"
+    "@biomejs/biome": "2.4.4",
+    "typescript": "^5.9.3"
   }
 }

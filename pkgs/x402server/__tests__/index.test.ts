@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
 import { x402Version } from "@x402/core";
-import { createApp } from "./app";
-import type { WeatherData, WeatherService } from "./weather/service";
+import { describe, expect, it } from "vitest";
+import { createApp } from "../src/app";
+import type { WeatherData, WeatherService } from "../src/weather/service";
 
 const sampleWeather: WeatherData = {
   city: "Tokyo",

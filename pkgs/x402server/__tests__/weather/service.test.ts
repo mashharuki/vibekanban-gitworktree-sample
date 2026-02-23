@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createMockWeatherService } from "./service";
+import { createMockWeatherService } from "../../src/weather/service";
 
 describe("createMockWeatherService", () => {
   it("returns weather data for a known city", async () => {
