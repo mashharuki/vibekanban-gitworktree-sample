@@ -50,9 +50,23 @@ const initializeMcpServer = async (app: ReturnType<typeof createMcpApp>, env: X4
 };
 
 const originalFetch = globalThis.fetch;
+const originalPaymentEnv = {
+  SERVER_WALLET_ADDRESS: process.env.SERVER_WALLET_ADDRESS,
+  FACILITATOR_URL: process.env.FACILITATOR_URL,
+  X402_PRICE_USD: process.env.X402_PRICE_USD,
+  X402_NETWORK: process.env.X402_NETWORK,
+};
+
+const testPaymentEnv = {
+  SERVER_WALLET_ADDRESS: "0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072",
+  FACILITATOR_URL: "https://x402.org/facilitator",
+  X402_PRICE_USD: "$0.01",
+  X402_NETWORK: "eip155:84532",
+};
+
 const mockedFacilitatorFetch: typeof fetch = async (input, init) => {
   const url = typeof input === "string" ? input : input.toString();
-  if (url.includes("facilitator.x402.org")) {
+  if (url.includes("facilitator.x402.org") || url.includes("x402.org/facilitator")) {
     return new Response(
       JSON.stringify({
         kinds: [{ x402Version, scheme: "exact", network: "eip155:84532" }],
@@ -76,6 +90,10 @@ const loadCreateX402App = async (): Promise<CreateX402App> => {
     return createX402App;
   }
 
+  process.env.SERVER_WALLET_ADDRESS = testPaymentEnv.SERVER_WALLET_ADDRESS;
+  process.env.FACILITATOR_URL = testPaymentEnv.FACILITATOR_URL;
+  process.env.X402_PRICE_USD = testPaymentEnv.X402_PRICE_USD;
+  process.env.X402_NETWORK = testPaymentEnv.X402_NETWORK;
   globalThis.fetch = mockedFacilitatorFetch;
   const mod = await import("../../x402server/src/index");
   createX402App = mod.createApp;
@@ -84,6 +102,10 @@ const loadCreateX402App = async (): Promise<CreateX402App> => {
 
 afterAll(() => {
   globalThis.fetch = originalFetch;
+  process.env.SERVER_WALLET_ADDRESS = originalPaymentEnv.SERVER_WALLET_ADDRESS;
+  process.env.FACILITATOR_URL = originalPaymentEnv.FACILITATOR_URL;
+  process.env.X402_PRICE_USD = originalPaymentEnv.X402_PRICE_USD;
+  process.env.X402_NETWORK = originalPaymentEnv.X402_NETWORK;
 });
 
 const createAppConnectedWithX402Server = (x402App: RequestableApp) => {
@@ -110,11 +132,7 @@ const createAppConnectedWithX402Server = (x402App: RequestableApp) => {
   });
 };
 
-const callGetWeatherTool = async (
-  app: ReturnType<typeof createMcpApp>,
-  city: string,
-  env: X402FetchClientEnv,
-) => {
+const callGetWeatherTool = async (app: ReturnType<typeof createMcpApp>, city: string, env: X402FetchClientEnv) => {
   const response = await app.request(
     "/mcp",
     {

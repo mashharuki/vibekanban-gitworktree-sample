@@ -22,22 +22,25 @@ type CreateAppOptions = {
   payment?: PaymentOptions;
 };
 
-const DEFAULT_PAY_TO = "0x0000000000000000000000000000000000000000";
-const DEFAULT_FACILITATOR_URL = "https://facilitator.x402.org";
-const DEFAULT_PRICE_USD = "$0.01";
-const BASE_SEPOLIA_NETWORK = "eip155:84532";
-
 const toErrorResponse = (statusCode: number, message: string): ErrorResponse => ({
   statusCode,
   message,
 });
 
+const requiredPaymentConfig = (value: string | undefined, key: string) => {
+  if (value?.trim()) {
+    return value;
+  }
+
+  throw new Error(`Missing required payment configuration: ${key}`);
+};
+
 const resolvePaymentOptions = (payment: PaymentOptions = {}) => {
   return {
-    payTo: payment.payTo ?? process.env.SERVER_WALLET_ADDRESS ?? DEFAULT_PAY_TO,
-    facilitatorUrl: payment.facilitatorUrl ?? process.env.FACILITATOR_URL ?? DEFAULT_FACILITATOR_URL,
-    price: payment.price ?? DEFAULT_PRICE_USD,
-    network: payment.network ?? BASE_SEPOLIA_NETWORK,
+    payTo: requiredPaymentConfig(payment.payTo ?? process.env.SERVER_WALLET_ADDRESS, "SERVER_WALLET_ADDRESS"),
+    facilitatorUrl: requiredPaymentConfig(payment.facilitatorUrl ?? process.env.FACILITATOR_URL, "FACILITATOR_URL"),
+    price: requiredPaymentConfig(payment.price ?? process.env.X402_PRICE_USD, "X402_PRICE_USD"),
+    network: requiredPaymentConfig(payment.network ?? process.env.X402_NETWORK, "X402_NETWORK"),
     facilitatorClient: payment.facilitatorClient,
   };
 };

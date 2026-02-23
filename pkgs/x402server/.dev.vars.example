@@ -6,3 +6,9 @@ SERVER_WALLET_ADDRESS=0x0000000000000000000000000000000000000000
 
 # x402 facilitator endpoint URL
 FACILITATOR_URL=https://x402.org/facilitator
+
+# x402 payment amount (USD)
+X402_PRICE_USD=$0.01
+
+# x402 payment network CAIP-2 identifier
+X402_NETWORK=eip155:84532

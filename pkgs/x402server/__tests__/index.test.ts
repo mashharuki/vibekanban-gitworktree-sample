@@ -10,6 +10,13 @@ const sampleWeather: WeatherData = {
   humidity: 60,
 };
 
+const testPaymentOptions = {
+  payTo: "0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072",
+  facilitatorUrl: "https://x402.org/facilitator",
+  price: "$0.01",
+  network: "eip155:84532",
+};
+
 const fakeFacilitatorClient = {
   async getSupported() {
     return {
@@ -29,7 +36,7 @@ const fakeFacilitatorClient = {
 describe("x402server API", () => {
   it("returns service status on GET /", async () => {
     const app = createApp(undefined, {
-      payment: { facilitatorClient: fakeFacilitatorClient as any },
+      payment: { ...testPaymentOptions, facilitatorClient: fakeFacilitatorClient as any },
     });
 
     const res = await app.request("/");
@@ -40,7 +47,7 @@ describe("x402server API", () => {
 
   it("returns 402 for unpaid request on /weather", async () => {
     const app = createApp(undefined, {
-      payment: { facilitatorClient: fakeFacilitatorClient as any },
+      payment: { ...testPaymentOptions, facilitatorClient: fakeFacilitatorClient as any },
     });
 
     const res = await app.request("/weather?city=Tokyo");
@@ -50,7 +57,7 @@ describe("x402server API", () => {
 
   it("keeps health check endpoint unprotected", async () => {
     const app = createApp(undefined, {
-      payment: { facilitatorClient: fakeFacilitatorClient as any },
+      payment: { ...testPaymentOptions, facilitatorClient: fakeFacilitatorClient as any },
     });
 
     const res = await app.request("/");
