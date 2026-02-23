@@ -1,14 +1,8 @@
-import {
-  HTTPFacilitatorClient,
-  type FacilitatorClient,
-} from "@x402/core/server";
+import { type FacilitatorClient, HTTPFacilitatorClient } from "@x402/core/server";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
 import { paymentMiddleware, x402ResourceServer } from "@x402/hono";
 import { Hono } from "hono";
-import {
-  createMockWeatherService,
-  type WeatherService,
-} from "./weather/service";
+import { createMockWeatherService, type WeatherService } from "./weather/service";
 
 type ErrorResponse = {
   statusCode: number;
@@ -33,10 +27,7 @@ const DEFAULT_FACILITATOR_URL = "https://facilitator.x402.org";
 const DEFAULT_PRICE_USD = "$0.01";
 const BASE_SEPOLIA_NETWORK = "eip155:84532";
 
-const toErrorResponse = (
-  statusCode: number,
-  message: string,
-): ErrorResponse => ({
+const toErrorResponse = (statusCode: number, message: string): ErrorResponse => ({
   statusCode,
   message,
 });
@@ -44,10 +35,7 @@ const toErrorResponse = (
 const resolvePaymentOptions = (payment: PaymentOptions = {}) => {
   return {
     payTo: payment.payTo ?? process.env.SERVER_WALLET_ADDRESS ?? DEFAULT_PAY_TO,
-    facilitatorUrl:
-      payment.facilitatorUrl ??
-      process.env.FACILITATOR_URL ??
-      DEFAULT_FACILITATOR_URL,
+    facilitatorUrl: payment.facilitatorUrl ?? process.env.FACILITATOR_URL ?? DEFAULT_FACILITATOR_URL,
     price: payment.price ?? DEFAULT_PRICE_USD,
     network: payment.network ?? BASE_SEPOLIA_NETWORK,
     facilitatorClient: payment.facilitatorClient,
@@ -115,10 +103,7 @@ export const createApp = (
 
       return c.json(weather, 200);
     } catch {
-      return c.json(
-        toErrorResponse(503, "weather service unavailable"),
-        503,
-      );
+      return c.json(toErrorResponse(503, "weather service unavailable"), 503);
     }
   });
 

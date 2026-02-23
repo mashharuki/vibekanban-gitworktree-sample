@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
+import { createGetWeatherToolHandler, formatWeatherText, getWeatherInputSchema } from "./../src/weather-tool";
 import type { WeatherData, X402FetchClientEnv } from "./../src/x402-fetch-client";
-import { createGetWeatherToolHandler, formatWeatherText, getWeatherInputSchema } from "./weather-tool";
 
 const dummyEnv: X402FetchClientEnv = {
   CLIENT_PRIVATE_KEY: "0x1111111111111111111111111111111111111111111111111111111111111111",
