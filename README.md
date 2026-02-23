@@ -91,6 +91,22 @@ git worktree remove --force ../project-task-a
   pnpm mcpserver run delete
   ```
 
+## E2E 結合テスト
+
+以下のコマンドで、`mcpserver -> x402FetchClient -> x402server` の結合動作を in-process で検証できます。
+
+```bash
+pnpm run test:e2e
+```
+
+このE2Eでは次を確認します。
+
+- x402server / mcpserver のヘルスチェック応答
+- `get_weather` ツールから `/weather` への到達と正常応答
+- 不正都市名（404）のエラー伝搬
+- 都市パラメータ欠落時（バリデーション）のエラー応答
+- 未決済時の402エラー伝搬
+
 ## cc-sdd + VibeKanban + GitWorkTreeによる開発のワークフロー
 
 - 0. プロダクトのビジョン、コンセプトを策定する

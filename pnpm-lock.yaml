@@ -11,9 +11,6 @@ importers:
       '@biomejs/biome':
         specifier: 2.4.4
         version: 2.4.4
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
 
   pkgs/mcpserver:
     dependencies:
@@ -2832,7 +2829,8 @@ snapshots:
       media-typer: 1.1.0
       mime-types: 3.0.2
 
-  typescript@5.9.3: {}
+  typescript@5.9.3:
+    optional: true
 
   undici-types@6.19.8: {}
 

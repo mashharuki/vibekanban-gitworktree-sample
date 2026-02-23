@@ -69,6 +69,19 @@ describe("createX402FetchClient", () => {
     await expect(client.fetchWeather("Tokyo")).rejects.toThrow("x402 payment failed (402): payment rejected");
   });
 
+  it("uses details field when message is not present in error response", async () => {
+    const { paymentFetch, deps } = createDeps();
+    paymentFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify({ error: "settlement failed", details: "missing payment" }), {
+        status: 402,
+      }),
+    );
+
+    const client = createX402FetchClient(dummyEnv, deps);
+
+    await expect(client.fetchWeather("Tokyo")).rejects.toThrow("x402 payment failed (402): missing payment");
+  });
+
   it("throws an HTTP error with status when response is not ok", async () => {
     const { paymentFetch, deps } = createDeps();
     paymentFetch.mockResolvedValueOnce(

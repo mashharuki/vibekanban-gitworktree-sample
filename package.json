@@ -7,6 +7,7 @@
     "format": "biome format --write .",
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
+    "test:e2e": "pnpm --filter mcpserver test -- e2e-validation.test.ts",
     "ci": "pnpm run build && pnpm run test",
     "x402server": "pnpm --filter x402server",
     "mcpserver": "pnpm --filter mcpserver"
