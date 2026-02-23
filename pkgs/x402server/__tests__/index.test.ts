@@ -1,5 +1,6 @@
 import { x402Version } from "@x402/core";
 import { describe, expect, it } from "vitest";
+import { createApp } from "../src/app";
 import type { WeatherData, WeatherService } from "../src/utils/types";
 
 const sampleWeather: WeatherData = {

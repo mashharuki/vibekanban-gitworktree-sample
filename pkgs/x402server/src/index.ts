@@ -1,3 +1,5 @@
-import app from "./app";
+import app, { createApp } from "./app";
+
+export { createApp };
 
 export default app;
