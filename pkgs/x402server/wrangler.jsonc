@@ -3,10 +3,15 @@
   "name": "x402server",
   "main": "src/index.ts",
   "compatibility_date": "2026-02-23",
-  "compatibility_flags": ["nodejs_compat"]
-  // "vars": {
-  //   "MY_VAR": "my-variable"
-  // },
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "SERVER_WALLET_ADDRESS": "0x51908F598A5e0d8F1A3bAbFa6DF76F9704daD072",
+    "FACILITATOR_URL": "https://x402.org/facilitator",
+    "X402_PRICE_USD": "$0.01",
+    "X402_NETWORK": "eip155:84532",
+  },
+  // If you need per-environment values, define `[env.<name>.vars]` and
+  // deploy with `wrangler deploy --env <name>`.
   // "kv_namespaces": [
   //   {
   //     "binding": "MY_KV_NAMESPACE",

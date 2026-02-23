@@ -11,7 +11,7 @@
 ### ------------------------------------------------------------
 
 @x402_base = http://127.0.0.1:8787
-@mcp_base = http://127.0.0.1:8788
+@mcp_base = https://mcpserver.avp-104-106-107-a78.workers.dev
 @json = application/json
 @mcp_accept = application/json, text/event-stream
 

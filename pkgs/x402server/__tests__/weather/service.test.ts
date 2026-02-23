@@ -24,6 +24,27 @@ describe("createMockWeatherService", () => {
     expect(upper?.city).toBe("Tokyo");
   });
 
+  it("matches cities with country suffix", async () => {
+    const service = createMockWeatherService();
+
+    const result = await service.getWeatherByCity("Tokyo, JP");
+
+    expect(result).not.toBeNull();
+    expect(result?.city).toBe("Tokyo");
+  });
+
+  it("matches cities wrapped by quotes", async () => {
+    const service = createMockWeatherService();
+
+    const singleQuoted = await service.getWeatherByCity("'Tokyo'");
+    const doubleQuoted = await service.getWeatherByCity('"Tokyo"');
+
+    expect(singleQuoted).not.toBeNull();
+    expect(doubleQuoted).not.toBeNull();
+    expect(singleQuoted?.city).toBe("Tokyo");
+    expect(doubleQuoted?.city).toBe("Tokyo");
+  });
+
   it("returns null for unknown city", async () => {
     const service = createMockWeatherService();
 

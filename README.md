@@ -67,6 +67,13 @@ git worktree remove --force ../project-task-a
   pnpm x402server run dev
   ```
 
+  以下のようなログが出ればOK!
+
+  ```bash
+  [wrangler:info] GET /weather 402 Payment Required (1049ms)
+  [wrangler:info] GET /weather 200 OK (3453ms)
+  ```
+
 - デプロイ
 
   ```bash
@@ -90,6 +97,13 @@ git worktree remove --force ../project-task-a
   ```
 
   `X402_SERVER_URL`には上記でCloudFlare Workersにデプロイしたx402バックエンドサーバーのAPIエンドポイントURLを指定する
+
+  (Cloudflare Workersにデプロイする場合)x402クライアント用の秘密鍵とx402バックエンドサーバーのエンドポイントの登録
+
+  ```bash
+  wrangler secret put CLIENT_PRIVATE_KEY --name mcpserver
+  wrangler secret put X402_SERVER_URL --name mcpserver
+  ```
 
 - ローカルでの検証
 

@@ -22,7 +22,12 @@ const MOCK_WEATHER_DATA: ReadonlyArray<WeatherData> = [
   },
 ];
 
-const normalizeCity = (city: string): string => city.trim().toLowerCase();
+const normalizeCity = (city: string): string => {
+  const trimmed = city.trim().replace(/^['\"]+|['\"]+$/g, "");
+  const withoutCountry = trimmed.split(",")[0]?.trim() ?? trimmed;
+
+  return withoutCountry.toLowerCase();
+};
 
 /**
  * モックの天気予報を提供するWeatherServiceの実装を作成するファクトリーメソッド
@@ -33,9 +38,7 @@ export const createMockWeatherService = (): WeatherService => {
     async getWeatherByCity(city: string): Promise<WeatherData | null> {
       const normalized = normalizeCity(city);
 
-      const weather = MOCK_WEATHER_DATA.find(
-        (item) => normalizeCity(item.city) === normalized,
-      );
+      const weather = MOCK_WEATHER_DATA.find((item) => normalizeCity(item.city) === normalized);
 
       return weather ?? null;
     },
