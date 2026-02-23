@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createApp } from "./index";
+import { x402Version } from "@x402/core";
+import { createApp } from "./app";
 import type { WeatherData, WeatherService } from "./weather/service";
 
 const sampleWeather: WeatherData = {
@@ -9,9 +10,48 @@ const sampleWeather: WeatherData = {
   humidity: 60,
 };
 
+const fakeFacilitatorClient = {
+  async getSupported() {
+    return {
+      kinds: [{ x402Version, scheme: "exact", network: "eip155:84532" }],
+      extensions: [],
+      signers: {},
+    };
+  },
+  async verify() {
+    return { isValid: false, invalidReason: "missing payment" };
+  },
+  async settle() {
+    return { success: true, transaction: "0x", network: "eip155:84532" };
+  },
+};
+
 describe("x402server API", () => {
   it("returns service status on GET /", async () => {
-    const app = createApp();
+    const app = createApp(undefined, {
+      payment: { facilitatorClient: fakeFacilitatorClient as any },
+    });
+
+    const res = await app.request("/");
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ status: "ok" });
+  });
+
+  it("returns 402 for unpaid request on /weather", async () => {
+    const app = createApp(undefined, {
+      payment: { facilitatorClient: fakeFacilitatorClient as any },
+    });
+
+    const res = await app.request("/weather?city=Tokyo");
+
+    expect(res.status).toBe(402);
+  });
+
+  it("keeps health check endpoint unprotected", async () => {
+    const app = createApp(undefined, {
+      payment: { facilitatorClient: fakeFacilitatorClient as any },
+    });
 
     const res = await app.request("/");
 
@@ -20,7 +60,7 @@ describe("x402server API", () => {
   });
 
   it("returns 400 when city query is missing", async () => {
-    const app = createApp();
+    const app = createApp(undefined, { enablePayment: false });
 
     const res = await app.request("/weather");
 
@@ -37,7 +77,7 @@ describe("x402server API", () => {
         return sampleWeather;
       },
     };
-    const app = createApp(weatherService);
+    const app = createApp(weatherService, { enablePayment: false });
 
     const res = await app.request("/weather?city=Tokyo");
 
@@ -51,7 +91,7 @@ describe("x402server API", () => {
         return null;
       },
     };
-    const app = createApp(weatherService);
+    const app = createApp(weatherService, { enablePayment: false });
 
     const res = await app.request("/weather?city=Atlantis");
 
@@ -68,7 +108,7 @@ describe("x402server API", () => {
         throw new Error("upstream unavailable");
       },
     };
-    const app = createApp(weatherService);
+    const app = createApp(weatherService, { enablePayment: false });
 
     const res = await app.request("/weather?city=Tokyo");
 
