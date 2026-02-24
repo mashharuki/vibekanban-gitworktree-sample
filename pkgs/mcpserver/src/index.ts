@@ -2,19 +2,19 @@ import { StreamableHTTPTransport } from "@hono/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import {
-  createDefaultGetWeatherToolDeps,
-  registerGetWeatherTool,
-} from "./weather-tool";
-import type { GetWeatherToolDeps } from "./weather-tool";
+import type { GetWeatherToolDeps } from "./tools/weather";
+import { createDefaultGetWeatherToolDeps, registerGetWeatherTool } from "./tools/weather";
 import type { X402FetchClientEnv } from "./x402-fetch-client";
 
 type CreateAppOptions = {
-  getWeatherToolDepsFactory?: (
-    getEnv: () => X402FetchClientEnv,
-  ) => GetWeatherToolDeps;
+  getWeatherToolDepsFactory?: (getEnv: () => X402FetchClientEnv) => GetWeatherToolDeps;
 };
 
+/**
+ * Hono アプリケーションの作成
+ * @param options
+ * @returns
+ */
 export const createApp = (options: CreateAppOptions = {}): Hono => {
   const app = new Hono();
   const mcpServer = new McpServer({
@@ -30,8 +30,7 @@ export const createApp = (options: CreateAppOptions = {}): Hono => {
       CLIENT_PRIVATE_KEY: "",
       X402_SERVER_URL: "",
     };
-  const getWeatherToolDepsFactory =
-    options.getWeatherToolDepsFactory ?? createDefaultGetWeatherToolDeps;
+  const getWeatherToolDepsFactory = options.getWeatherToolDepsFactory ?? createDefaultGetWeatherToolDeps;
 
   registerGetWeatherTool(mcpServer, getWeatherToolDepsFactory(getEnv));
 

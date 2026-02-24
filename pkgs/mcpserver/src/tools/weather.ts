@@ -5,7 +5,7 @@ import {
   type WeatherData,
   type X402FetchClient,
   type X402FetchClientEnv,
-} from "./x402-fetch-client";
+} from "../x402-fetch-client";
 
 type WeatherFetchClient = Pick<X402FetchClient, "fetchWeather">;
 
@@ -66,10 +66,7 @@ export const createGetWeatherToolHandler = (deps: GetWeatherToolDeps) => {
   };
 };
 
-export const registerGetWeatherTool = (
-  server: McpServer,
-  deps: GetWeatherToolDeps,
-): void => {
+export const registerGetWeatherTool = (server: McpServer, deps: GetWeatherToolDeps): void => {
   server.registerTool(
     "get_weather",
     {
@@ -81,9 +78,7 @@ export const registerGetWeatherTool = (
   );
 };
 
-export const createDefaultGetWeatherToolDeps = (
-  getEnv: () => X402FetchClientEnv,
-): GetWeatherToolDeps => {
+export const createDefaultGetWeatherToolDeps = (getEnv: () => X402FetchClientEnv): GetWeatherToolDeps => {
   return {
     createClient: createX402FetchClient,
     getEnv,

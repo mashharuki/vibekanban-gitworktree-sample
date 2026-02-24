@@ -1,25 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-  createGetWeatherToolHandler,
-  formatWeatherText,
-  getWeatherInputSchema,
-} from "./../src/weather-tool";
-import type {
-  WeatherData,
-  X402FetchClientEnv,
-} from "./../src/x402-fetch-client";
+import { createGetWeatherToolHandler, formatWeatherText, getWeatherInputSchema } from "../src/tools/weather";
+import type { WeatherData, X402FetchClientEnv } from "./../src/x402-fetch-client";
 
 const dummyEnv: X402FetchClientEnv = {
-  CLIENT_PRIVATE_KEY:
-    "0x1111111111111111111111111111111111111111111111111111111111111111",
+  CLIENT_PRIVATE_KEY: "0x1111111111111111111111111111111111111111111111111111111111111111",
   X402_SERVER_URL: "http://localhost:8787",
 };
 
 describe("get_weather tool", () => {
   it("validates tool input schema", () => {
-    expect(getWeatherInputSchema.safeParse({ city: "Tokyo" }).success).toBe(
-      true,
-    );
+    expect(getWeatherInputSchema.safeParse({ city: "Tokyo" }).success).toBe(true);
     expect(getWeatherInputSchema.safeParse({ city: "" }).success).toBe(false);
     expect(getWeatherInputSchema.safeParse({}).success).toBe(false);
   });
@@ -33,12 +23,7 @@ describe("get_weather tool", () => {
     };
 
     expect(formatWeatherText(weather)).toBe(
-      [
-        "City: Tokyo",
-        "Condition: Sunny",
-        "Temperature: 28°C",
-        "Humidity: 60%",
-      ].join("\n"),
+      ["City: Tokyo", "Condition: Sunny", "Temperature: 28°C", "Humidity: 60%"].join("\n"),
     );
   });
 
@@ -65,12 +50,7 @@ describe("get_weather tool", () => {
       content: [
         {
           type: "text",
-          text: [
-            "City: Tokyo",
-            "Condition: Sunny",
-            "Temperature: 28°C",
-            "Humidity: 60%",
-          ].join("\n"),
+          text: ["City: Tokyo", "Condition: Sunny", "Temperature: 28°C", "Humidity: 60%"].join("\n"),
         },
       ],
     });

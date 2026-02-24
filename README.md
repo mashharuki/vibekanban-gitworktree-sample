@@ -111,6 +111,14 @@ git worktree remove --force ../project-task-a
   pnpm mcpserver run dev
   ```
 
+  ローカルでGPT Appのテストをする際は以下も実行する
+
+  ```bash
+  ngrok http 8788
+  ```
+
+  `https://<固有値>.ngrok-free.dev/mcp`をGPT AppのURLに登録すればチャットからx402の支払いができる！
+
 - デプロイ
 
   ```bash
