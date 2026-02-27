@@ -1,8 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { createX402FetchClient, type WeatherData } from "./../src/x402-fetch-client";
+import {
+  createX402FetchClient,
+  type WeatherData,
+} from "./../src/x402-fetch-client";
 
 const dummyEnv = {
-  CLIENT_PRIVATE_KEY: "0x1111111111111111111111111111111111111111111111111111111111111111",
+  CLIENT_PRIVATE_KEY:
+    "0x1111111111111111111111111111111111111111111111111111111111111111",
   X402_SERVER_URL: "http://localhost:8787",
 };
 
@@ -35,15 +39,20 @@ describe("createX402FetchClient", () => {
       humidity: 60,
     };
     const { paymentFetch, deps } = createDeps();
-    paymentFetch.mockResolvedValueOnce(new Response(JSON.stringify(weather), { status: 200 }));
+    paymentFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify(weather), { status: 200 }),
+    );
 
     const client = createX402FetchClient(dummyEnv, deps);
     const result = await client.fetchWeather("Tokyo");
 
     expect(result).toEqual(weather);
-    expect(paymentFetch).toHaveBeenCalledWith("http://localhost:8787/weather?city=Tokyo", {
-      method: "GET",
-    });
+    expect(paymentFetch).toHaveBeenCalledWith(
+      "http://localhost:8787/weather?city=Tokyo",
+      {
+        method: "GET",
+      },
+    );
     expect(deps.wrapFetchWithPaymentFromConfig).toHaveBeenCalledTimes(1);
   });
 
@@ -53,7 +62,9 @@ describe("createX402FetchClient", () => {
 
     const client = createX402FetchClient(dummyEnv, deps);
 
-    await expect(client.fetchWeather("Tokyo")).rejects.toThrow("x402server connection failed: ECONNREFUSED");
+    await expect(client.fetchWeather("Tokyo")).rejects.toThrow(
+      "x402server connection failed: ECONNREFUSED",
+    );
   });
 
   it("throws a payment error with details when response is 402", async () => {
@@ -66,7 +77,9 @@ describe("createX402FetchClient", () => {
 
     const client = createX402FetchClient(dummyEnv, deps);
 
-    await expect(client.fetchWeather("Tokyo")).rejects.toThrow("x402 payment failed (402): payment rejected");
+    await expect(client.fetchWeather("Tokyo")).rejects.toThrow(
+      "x402 payment failed (402): payment rejected",
+    );
   });
 
   it("uses details field when message is not present in error response", async () => {
@@ -85,7 +98,9 @@ describe("createX402FetchClient", () => {
 
     const client = createX402FetchClient(dummyEnv, deps);
 
-    await expect(client.fetchWeather("Tokyo")).rejects.toThrow("x402 payment failed (402): missing payment");
+    await expect(client.fetchWeather("Tokyo")).rejects.toThrow(
+      "x402 payment failed (402): missing payment",
+    );
   });
 
   it("throws an HTTP error with status when response is not ok", async () => {
@@ -150,6 +165,8 @@ describe("createX402FetchClient", () => {
       throw new Error("invalid hex");
     }) as typeof deps.privateKeyToAccount;
 
-    expect(() => createX402FetchClient(dummyEnv, deps)).toThrow("CLIENT_PRIVATE_KEY is invalid: invalid hex");
+    expect(() => createX402FetchClient(dummyEnv, deps)).toThrow(
+      "CLIENT_PRIVATE_KEY is invalid: invalid hex",
+    );
   });
 });

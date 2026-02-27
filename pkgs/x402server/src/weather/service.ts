@@ -38,7 +38,9 @@ export const createMockWeatherService = (): WeatherService => {
     async getWeatherByCity(city: string): Promise<WeatherData | null> {
       const normalized = normalizeCity(city);
 
-      const weather = MOCK_WEATHER_DATA.find((item) => normalizeCity(item.city) === normalized);
+      const weather = MOCK_WEATHER_DATA.find(
+        (item) => normalizeCity(item.city) === normalized,
+      );
 
       return weather ?? null;
     },

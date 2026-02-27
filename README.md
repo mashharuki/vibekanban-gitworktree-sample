@@ -125,6 +125,8 @@ git worktree remove --force ../project-task-a
   pnpm mcpserver run deploy
   ```
 
+  `https://mcpserver.<固有値>.workers.dev/mcp`をGPT AppのURLに登録すればチャットからx402の支払いができる！
+
 - クリーンアップ
 
   ```bash

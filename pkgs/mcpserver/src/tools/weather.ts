@@ -66,7 +66,10 @@ export const createGetWeatherToolHandler = (deps: GetWeatherToolDeps) => {
   };
 };
 
-export const registerGetWeatherTool = (server: McpServer, deps: GetWeatherToolDeps): void => {
+export const registerGetWeatherTool = (
+  server: McpServer,
+  deps: GetWeatherToolDeps,
+): void => {
   server.registerTool(
     "get_weather",
     {
@@ -78,7 +81,9 @@ export const registerGetWeatherTool = (server: McpServer, deps: GetWeatherToolDe
   );
 };
 
-export const createDefaultGetWeatherToolDeps = (getEnv: () => X402FetchClientEnv): GetWeatherToolDeps => {
+export const createDefaultGetWeatherToolDeps = (
+  getEnv: () => X402FetchClientEnv,
+): GetWeatherToolDeps => {
   return {
     createClient: createX402FetchClient,
     getEnv,

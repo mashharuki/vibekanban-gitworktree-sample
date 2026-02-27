@@ -1,3 +1,4 @@
+import type { Fetcher } from "@cloudflare/workers-types";
 import { ExactEvmScheme } from "@x402/evm";
 import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
 import { privateKeyToAccount } from "viem/accounts";
@@ -17,7 +18,7 @@ type ErrorResponse = {
 
 type X402FetchClientEnv = {
   CLIENT_PRIVATE_KEY: string;
-  X402_SERVER_URL: string;
+  X402_SERVER_URL: Fetcher; // Service Binding
 };
 
 export type { X402FetchClientEnv };
@@ -26,7 +27,9 @@ type X402FetchClientDeps = {
   fetchImpl: typeof fetch;
   wrapFetchWithPaymentFromConfig: typeof wrapFetchWithPaymentFromConfig;
   privateKeyToAccount: typeof privateKeyToAccount;
-  createSchemeClient: (account: ReturnType<typeof privateKeyToAccount>) => unknown;
+  createSchemeClient: (
+    account: ReturnType<typeof privateKeyToAccount>,
+  ) => unknown;
 };
 
 const defaultDeps: X402FetchClientDeps = {
@@ -72,15 +75,34 @@ export class X402FetchClient {
   ) {}
 
   async fetchWeather(city: string): Promise<WeatherData> {
-    const url = new URL("/weather", this.baseUrl);
+    const url = new URL("https://x402server.internal/weather");
     url.searchParams.set("city", city);
 
     let response: Response;
 
     try {
-      response = await this.paymentFetch(url.toString(), {
+      const response = await this.paymentFetch(url.toString(), {
         method: "GET",
       });
+
+      console.log("[fetchWeather] url=", url.toString());
+      console.log(
+        "[fetchWeather] status=",
+        response.status,
+        response.statusText,
+      );
+      console.log(
+        "[fetchWeather] content-type=",
+        response.headers.get("content-type"),
+      );
+      console.log(
+        "[fetchWeather] payment-required header exists?=",
+        response.headers.has("payment-required"),
+      );
+
+      // bodyは一回しか読めないので clone() して読む
+      const preview = await response.clone().text();
+      console.log("[fetchWeather] body preview=", preview.slice(0, 300));
     } catch (error) {
       const message = error instanceof Error ? error.message : "unknown error";
       throw new Error(`x402server connection failed: ${message}`);
@@ -94,8 +116,13 @@ export class X402FetchClient {
     if (!response.ok) {
       const detail = await parseErrorMessage(response);
       const location = ` at ${url.toString()}`;
-      const hint = response.status === 404 ? " (check X402_SERVER_URL points to x402server)" : "";
-      throw new Error(`weather request failed (${response.status})${location}: ${detail}${hint}`);
+      const hint =
+        response.status === 404
+          ? " (check X402_SERVER_URL points to x402server)"
+          : "";
+      throw new Error(
+        `weather request failed (${response.status})${location}: ${detail}${hint}`,
+      );
     }
 
     return (await response.json()) as WeatherData;

@@ -3,5 +3,11 @@
   "name": "mcpserver",
   "main": "src/index.ts",
   "compatibility_date": "2026-02-23",
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "services": [
+    {
+      "binding": "X402SERVER",
+      "service": "x402server"
+    }
+  ]
 }
