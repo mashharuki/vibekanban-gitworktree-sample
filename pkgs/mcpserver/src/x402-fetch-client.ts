@@ -18,7 +18,7 @@ type ErrorResponse = {
 
 type X402FetchClientEnv = {
   CLIENT_PRIVATE_KEY: string;
-  X402_SERVER_URL?: string; // URL string (local/dev or deployed endpoint)
+  X402_SERVER_URL?: string | Fetcher; // URL string or Service Binding
   X402SERVER?: Fetcher; // Cloudflare Service Binding
 };
 
@@ -59,22 +59,48 @@ const parseErrorMessage = async (response: Response): Promise<string> => {
   return response.statusText || "unknown error";
 };
 
+const isFetcherBinding = (value: unknown): value is Fetcher => {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "fetch" in value &&
+    typeof (value as { fetch?: unknown }).fetch === "function"
+  );
+};
+
+const getServiceBinding = (env: X402FetchClientEnv): Fetcher | undefined => {
+  if (isFetcherBinding(env.X402SERVER)) {
+    return env.X402SERVER;
+  }
+  if (isFetcherBinding(env.X402_SERVER_URL)) {
+    return env.X402_SERVER_URL;
+  }
+  return undefined;
+};
+
 const validateEnv = (env: X402FetchClientEnv): void => {
   if (!env.CLIENT_PRIVATE_KEY) {
     throw new Error("CLIENT_PRIVATE_KEY is required");
   }
 
-  if (!env.X402_SERVER_URL && !env.X402SERVER) {
+  const hasUrlString =
+    typeof env.X402_SERVER_URL === "string" && env.X402_SERVER_URL.length > 0;
+  const serviceBinding = getServiceBinding(env);
+  if (!hasUrlString && !serviceBinding) {
     throw new Error("either X402_SERVER_URL or X402SERVER is required");
   }
 };
 
 const resolveBaseUrl = (env: X402FetchClientEnv): string => {
-  if (env.X402_SERVER_URL) {
+  if (getServiceBinding(env)) {
+    return "https://x402server.internal";
+  }
+
+  if (typeof env.X402_SERVER_URL === "string" && env.X402_SERVER_URL.length > 0) {
     return env.X402_SERVER_URL;
   }
 
-  return "https://x402server.internal";
+  throw new Error("either X402_SERVER_URL or X402SERVER is required");
 };
 
 export class X402FetchClient {
@@ -133,8 +159,10 @@ export const createX402FetchClient = (
     throw new Error(`CLIENT_PRIVATE_KEY is invalid: ${message}`);
   }
 
-  const fetchImpl =
-    env.X402SERVER !== undefined ? env.X402SERVER.fetch.bind(env.X402SERVER) : deps.fetchImpl;
+  const serviceBinding = getServiceBinding(env);
+  const fetchImpl = serviceBinding
+    ? serviceBinding.fetch.bind(serviceBinding)
+    : deps.fetchImpl;
   const paymentFetch = deps.wrapFetchWithPaymentFromConfig(fetchImpl, {
     schemes: [
       {

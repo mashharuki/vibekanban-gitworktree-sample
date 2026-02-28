@@ -169,4 +169,42 @@ describe("createX402FetchClient", () => {
       "CLIENT_PRIVATE_KEY is invalid: invalid hex",
     );
   });
+
+  it("uses service binding when X402_SERVER_URL is provided as a Fetcher", async () => {
+    const weather: WeatherData = {
+      city: "Tokyo",
+      condition: "Sunny",
+      temperatureC: 28,
+      humidity: 60,
+    };
+    const { paymentFetch, deps } = createDeps();
+    paymentFetch.mockResolvedValueOnce(
+      new Response(JSON.stringify(weather), { status: 200 }),
+    );
+
+    const serviceBinding = {
+      fetch: vi.fn<typeof fetch>(),
+    } as unknown as import("@cloudflare/workers-types").Fetcher;
+
+    const client = createX402FetchClient(
+      {
+        CLIENT_PRIVATE_KEY: dummyEnv.CLIENT_PRIVATE_KEY,
+        X402_SERVER_URL: serviceBinding,
+      },
+      deps,
+    );
+    const result = await client.fetchWeather("Tokyo");
+
+    expect(result).toEqual(weather);
+    const wrapCall = deps.wrapFetchWithPaymentFromConfig.mock.calls[0];
+    expect(wrapCall).toBeDefined();
+    expect(wrapCall?.[0]).not.toBe(deps.fetchImpl);
+    expect(typeof wrapCall?.[0]).toBe("function");
+    expect(paymentFetch).toHaveBeenCalledWith(
+      "https://x402server.internal/weather?city=Tokyo",
+      {
+        method: "GET",
+      },
+    );
+  });
 });
