@@ -156,7 +156,7 @@ describe("createX402FetchClient", () => {
         },
         deps,
       ),
-    ).toThrow("X402_SERVER_URL is required");
+    ).toThrow("either X402_SERVER_URL or X402SERVER is required");
   });
 
   it("throws a clear error when private key is invalid", () => {

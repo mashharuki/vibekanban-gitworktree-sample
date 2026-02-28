@@ -18,7 +18,8 @@ type ErrorResponse = {
 
 type X402FetchClientEnv = {
   CLIENT_PRIVATE_KEY: string;
-  X402_SERVER_URL: Fetcher; // Service Binding
+  X402_SERVER_URL?: string; // URL string (local/dev or deployed endpoint)
+  X402SERVER?: Fetcher; // Cloudflare Service Binding
 };
 
 export type { X402FetchClientEnv };
@@ -63,9 +64,17 @@ const validateEnv = (env: X402FetchClientEnv): void => {
     throw new Error("CLIENT_PRIVATE_KEY is required");
   }
 
-  if (!env.X402_SERVER_URL) {
-    throw new Error("X402_SERVER_URL is required");
+  if (!env.X402_SERVER_URL && !env.X402SERVER) {
+    throw new Error("either X402_SERVER_URL or X402SERVER is required");
   }
+};
+
+const resolveBaseUrl = (env: X402FetchClientEnv): string => {
+  if (env.X402_SERVER_URL) {
+    return env.X402_SERVER_URL;
+  }
+
+  return "https://x402server.internal";
 };
 
 export class X402FetchClient {
@@ -75,34 +84,15 @@ export class X402FetchClient {
   ) {}
 
   async fetchWeather(city: string): Promise<WeatherData> {
-    const url = new URL("https://x402server.internal/weather");
+    const url = new URL("/weather", this.baseUrl);
     url.searchParams.set("city", city);
 
     let response: Response;
 
     try {
-      const response = await this.paymentFetch(url.toString(), {
+      response = await this.paymentFetch(url.toString(), {
         method: "GET",
       });
-
-      console.log("[fetchWeather] url=", url.toString());
-      console.log(
-        "[fetchWeather] status=",
-        response.status,
-        response.statusText,
-      );
-      console.log(
-        "[fetchWeather] content-type=",
-        response.headers.get("content-type"),
-      );
-      console.log(
-        "[fetchWeather] payment-required header exists?=",
-        response.headers.has("payment-required"),
-      );
-
-      // bodyは一回しか読めないので clone() して読む
-      const preview = await response.clone().text();
-      console.log("[fetchWeather] body preview=", preview.slice(0, 300));
     } catch (error) {
       const message = error instanceof Error ? error.message : "unknown error";
       throw new Error(`x402server connection failed: ${message}`);
@@ -143,7 +133,9 @@ export const createX402FetchClient = (
     throw new Error(`CLIENT_PRIVATE_KEY is invalid: ${message}`);
   }
 
-  const paymentFetch = deps.wrapFetchWithPaymentFromConfig(deps.fetchImpl, {
+  const fetchImpl =
+    env.X402SERVER !== undefined ? env.X402SERVER.fetch.bind(env.X402SERVER) : deps.fetchImpl;
+  const paymentFetch = deps.wrapFetchWithPaymentFromConfig(fetchImpl, {
     schemes: [
       {
         network: "eip155:*",
@@ -152,5 +144,5 @@ export const createX402FetchClient = (
     ],
   });
 
-  return new X402FetchClient(env.X402_SERVER_URL, paymentFetch);
+  return new X402FetchClient(resolveBaseUrl(env), paymentFetch);
 };
