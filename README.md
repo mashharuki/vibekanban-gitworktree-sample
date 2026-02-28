@@ -100,6 +100,8 @@ git worktree remove --force ../project-task-a
 
   (Cloudflare Workersにデプロイする場合)x402クライアント用の秘密鍵とx402バックエンドサーバーのエンドポイントの登録
 
+  以下のコマンドは、`pkgs/mcpserver`配下で実行する必要あり
+
   ```bash
   wrangler secret put CLIENT_PRIVATE_KEY --name mcpserver
   wrangler secret put X402_SERVER_URL --name mcpserver
