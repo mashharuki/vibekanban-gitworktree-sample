@@ -149,6 +149,17 @@ pnpm run test:e2e
 - 都市パラメータ欠落時（バリデーション）のエラー応答
 - 未決済時の402エラー伝搬
 
+## AI Agentからの呼び出しテスト
+
+以下の設定をMCPサーバー用の設定欄に追加する
+
+```json
+"sample-x402": {
+  "type": "sse",
+  "url": "https://mcpserver.<固有値>.workers.dev/mcp"
+}
+```
+
 ## cc-sdd + VibeKanban + GitWorkTreeによる開発のワークフロー
 
 - 0. プロダクトのビジョン、コンセプトを策定する
