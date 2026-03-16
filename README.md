@@ -6,6 +6,42 @@ VibeKanbanとGitWorktreeを掛け合わせたサンプルアプリ
 
 x402バックエンドサーバーとMCPサーバーを使ってGPT App内のチャットインターフェースから天気予報の情報を取得すると同時にステーブルコイン支払いが行われるサンプルアプリ。
 
+### このプロジェクトでできること
+
+- GPT App から `get_weather` ツールを呼び出して天気情報を取得
+- `x402` による支払い検証を通過したリクエストのみ `/weather` にアクセス
+- Cloudflare Workers 上で `x402server` と `mcpserver` を分離デプロイ
+- E2E テストで `mcpserver -> x402FetchClient -> x402server` の結合動作を検証
+
+## 構成
+
+### リポジトリ構成
+
+| パス                    | 役割                                                                     | 主な技術                                                          |
+| ----------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `pkgs/x402server`       | 天気 API と x402 決済検証を提供するバックエンド                          | Hono / x402 / Cloudflare Workers / TypeScript                     |
+| `pkgs/mcpserver`        | GPT App から呼び出される MCP サーバー。`x402server` を決済付きで呼び出す | Hono MCP / MCP SDK / x402 fetch / Cloudflare Workers / TypeScript |
+| `pkgs/*/__tests__`      | 単体・結合テスト群                                                       | Vitest                                                            |
+| ルート (`package.json`) | monorepo の共通スクリプト・ワークスペース管理                            | pnpm workspace                                                    |
+
+### リクエストの流れ
+
+1. GPT App から MCP ツール `get_weather` を実行
+2. `mcpserver` が `x402-fetch-client` で `/weather` を呼び出し
+3. `x402server` が `paymentMiddleware` で支払いを検証
+4. 検証後に天気データを返却
+
+## 機能一覧
+
+| 機能                             | 概要                                         | 提供パッケージ            | 補足                               |
+| -------------------------------- | -------------------------------------------- | ------------------------- | ---------------------------------- |
+| ヘルスチェック API               | サービス稼働確認 (`/`, `/health`)            | `x402server`, `mcpserver` | 監視・疎通確認に利用               |
+| 天気情報取得 API                 | 都市名を受けて天気を返却 (`/weather`)        | `x402server`              | 都市未登録時は 404                 |
+| x402 課金付きアクセス制御        | `/weather` を課金保護し未決済時は 402 を返却 | `x402server`              | 価格・ネットワークは環境変数で設定 |
+| MCP ツール公開                   | `get_weather` ツールを外部クライアントへ公開 | `mcpserver`               | 入力検証・エラー整形を実施         |
+| x402 決済付き fetch クライアント | 支払い情報付きで `x402server` を呼び出す     | `mcpserver`               | Service Binding / URL の両方に対応 |
+| E2E 結合テスト                   | MCP から backend までの通し動作を検証        | `mcpserver` テスト        | 402/404/正常系を確認               |
+
 ## 技術スタック
 
 - 全体の構成

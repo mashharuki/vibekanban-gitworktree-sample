@@ -23,6 +23,7 @@ const MOCK_WEATHER_DATA: ReadonlyArray<WeatherData> = [
 ];
 
 const normalizeCity = (city: string): string => {
+  // 引用符付き入力や "Tokyo, JP" のような表記ゆれを吸収する。
   const trimmed = city.trim().replace(/^['\"]+|['\"]+$/g, "");
   const withoutCountry = trimmed.split(",")[0]?.trim() ?? trimmed;
 
@@ -38,9 +39,8 @@ export const createMockWeatherService = (): WeatherService => {
     async getWeatherByCity(city: string): Promise<WeatherData | null> {
       const normalized = normalizeCity(city);
 
-      const weather = MOCK_WEATHER_DATA.find(
-        (item) => normalizeCity(item.city) === normalized,
-      );
+      // 都市名の正規化結果で比較し、大小文字差を無視して検索する。
+      const weather = MOCK_WEATHER_DATA.find((item) => normalizeCity(item.city) === normalized);
 
       return weather ?? null;
     },

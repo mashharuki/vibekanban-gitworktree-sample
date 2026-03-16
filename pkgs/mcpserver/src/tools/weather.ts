@@ -25,10 +25,12 @@ const buildErrorMessage = (error: unknown): string => {
   return "unknown error";
 };
 
+// MCP ツール入力の最小バリデーション（空文字 city を拒否）
 export const getWeatherInputSchema = z.object({
   city: z.string().min(1, "city is required"),
 });
 
+// MCP レスポンスとして返しやすいプレーンテキストへ整形する。
 export const formatWeatherText = (weather: WeatherData): string => {
   return [
     `City: ${weather.city}`,
@@ -39,6 +41,7 @@ export const formatWeatherText = (weather: WeatherData): string => {
 };
 
 export const createGetWeatherToolHandler = (deps: GetWeatherToolDeps) => {
+  // 各呼び出し時点で env からクライアントを生成し、最新設定を反映する。
   return async ({ city }: GetWeatherToolInput) => {
     try {
       const client = deps.createClient(deps.getEnv());
@@ -66,10 +69,8 @@ export const createGetWeatherToolHandler = (deps: GetWeatherToolDeps) => {
   };
 };
 
-export const registerGetWeatherTool = (
-  server: McpServer,
-  deps: GetWeatherToolDeps,
-): void => {
+export const registerGetWeatherTool = (server: McpServer, deps: GetWeatherToolDeps): void => {
+  // MCP クライアントから見えるツール名は get_weather で固定する。
   server.registerTool(
     "get_weather",
     {
@@ -81,9 +82,8 @@ export const registerGetWeatherTool = (
   );
 };
 
-export const createDefaultGetWeatherToolDeps = (
-  getEnv: () => X402FetchClientEnv,
-): GetWeatherToolDeps => {
+export const createDefaultGetWeatherToolDeps = (getEnv: () => X402FetchClientEnv): GetWeatherToolDeps => {
+  // 依存注入を1か所にまとめ、テストでは差し替えやすくする。
   return {
     createClient: createX402FetchClient,
     getEnv,

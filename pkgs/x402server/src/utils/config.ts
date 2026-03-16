@@ -47,9 +47,8 @@ const normalizeFacilitatorUrl = (rawUrl: string): string => {
  * @param payment
  * @returns
  */
-export const resolvePaymentOptions = (
-  payment: PaymentOptions = {},
-): ResolvedPaymentOptions => {
+export const resolvePaymentOptions = (payment: PaymentOptions = {}): ResolvedPaymentOptions => {
+  // 引数優先、未指定時は環境変数にフォールバックする。
   const facilitatorUrl = requiredPaymentConfig(
     payment.facilitatorUrl ?? process.env.FACILITATOR_URL,
     "FACILITATOR_URL",
@@ -57,19 +56,10 @@ export const resolvePaymentOptions = (
   const normalizedFacilitatorUrl = normalizeFacilitatorUrl(facilitatorUrl);
 
   return {
-    payTo: requiredPaymentConfig(
-      payment.payTo ?? process.env.SERVER_WALLET_ADDRESS,
-      "SERVER_WALLET_ADDRESS",
-    ),
+    payTo: requiredPaymentConfig(payment.payTo ?? process.env.SERVER_WALLET_ADDRESS, "SERVER_WALLET_ADDRESS"),
     facilitatorUrl: normalizedFacilitatorUrl,
-    price: requiredPaymentConfig(
-      payment.price ?? process.env.X402_PRICE_USD,
-      "X402_PRICE_USD",
-    ),
-    network: requiredPaymentConfig(
-      payment.network ?? process.env.X402_NETWORK,
-      "X402_NETWORK",
-    ),
+    price: requiredPaymentConfig(payment.price ?? process.env.X402_PRICE_USD, "X402_PRICE_USD"),
+    network: requiredPaymentConfig(payment.network ?? process.env.X402_NETWORK, "X402_NETWORK"),
     facilitatorClient:
       payment.facilitatorClient ??
       new HTTPFacilitatorClient({
@@ -83,10 +73,8 @@ export const resolvePaymentOptions = (
  * @param paymentOptions
  * @returns
  */
-export const createResourceServer = (
-  paymentOptions: ResolvedPaymentOptions,
-) => {
-  // リソースサーバーインスタンスを作成して登録
+export const createResourceServer = (paymentOptions: ResolvedPaymentOptions) => {
+  // ネットワークごとの検証スキームを登録した resource server を生成する。
   return new x402ResourceServer(paymentOptions.facilitatorClient).register(
     paymentOptions.network as `${string}:${string}`,
     new ExactEvmScheme(),

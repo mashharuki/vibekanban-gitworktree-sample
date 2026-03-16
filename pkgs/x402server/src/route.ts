@@ -7,6 +7,7 @@ import type { ResolvedPaymentOptions } from "./utils/types";
  */
 export const createRoutes = (payment: ResolvedPaymentOptions) => {
   return {
+    // x402 ミドルウェアが参照する「保護対象 + 決済条件」の定義。
     "GET /weather": {
       accepts: {
         scheme: "exact",

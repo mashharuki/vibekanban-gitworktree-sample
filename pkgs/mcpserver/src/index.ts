@@ -3,16 +3,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { GetWeatherToolDeps } from "./tools/weather";
-import {
-  createDefaultGetWeatherToolDeps,
-  registerGetWeatherTool,
-} from "./tools/weather";
+import { createDefaultGetWeatherToolDeps, registerGetWeatherTool } from "./tools/weather";
 import type { X402FetchClientEnv } from "./x402-fetch-client";
 
 type CreateAppOptions = {
-  getWeatherToolDepsFactory?: (
-    getEnv: () => X402FetchClientEnv,
-  ) => GetWeatherToolDeps;
+  getWeatherToolDepsFactory?: (getEnv: () => X402FetchClientEnv) => GetWeatherToolDeps;
 };
 
 /**
@@ -30,16 +25,17 @@ export const createApp = (options: CreateAppOptions = {}): Hono => {
   let transport: StreamableHTTPTransport | null = null;
   let currentEnv: X402FetchClientEnv | null = null;
 
+  // テスト時などに env が未設定でも落ちないように最小値を返す。
   const getEnv = () =>
     currentEnv ?? {
       CLIENT_PRIVATE_KEY: "",
       X402_SERVER_URL: "",
     };
-  const getWeatherToolDepsFactory =
-    options.getWeatherToolDepsFactory ?? createDefaultGetWeatherToolDeps;
+  const getWeatherToolDepsFactory = options.getWeatherToolDepsFactory ?? createDefaultGetWeatherToolDeps;
 
   registerGetWeatherTool(mcpServer, getWeatherToolDepsFactory(getEnv));
 
+  // MCP サーバーは 1 接続を再利用し、必要時のみ接続する。
   const connectServerIfNeeded = async (): Promise<StreamableHTTPTransport> => {
     if (mcpServer.isConnected() && transport) {
       return transport;
@@ -50,6 +46,7 @@ export const createApp = (options: CreateAppOptions = {}): Hono => {
     return transport;
   };
 
+  // DELETE 時に接続を明示クローズし、次回リクエストで再接続できる状態に戻す。
   const closeServerConnection = async (): Promise<void> => {
     if (transport) {
       await transport.close();
@@ -70,6 +67,7 @@ export const createApp = (options: CreateAppOptions = {}): Hono => {
     });
   });
 
+  // Streamable HTTP transport で MCP の POST/GET/DELETE を処理する。
   app.all("/mcp", async (c) => {
     currentEnv = c.env as X402FetchClientEnv;
     const currentTransport = await connectServerIfNeeded();
